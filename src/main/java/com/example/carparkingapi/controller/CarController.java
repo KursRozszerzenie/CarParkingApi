@@ -32,7 +32,7 @@ public class CarController {
     }
 
     @PostMapping("/batch")
-    public ResponseEntity<List<CarDTO>> saveAll(@RequestBody List<CarCommand> carCommands) {
+    public ResponseEntity<List<CarDTO>> saveAll(@RequestBody @Valid List<CarCommand> carCommands) {
         return new ResponseEntity<>(carService.saveAll(carCommands.stream()
                         .map(command -> modelMapper.map(command, Car.class))
                         .toList()).stream()

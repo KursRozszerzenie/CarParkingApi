@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/api/v1/parking")
@@ -24,7 +25,7 @@ public class ParkingController {
     private final ParkingService parkingService;
 
     @PostMapping
-    public ResponseEntity<ParkingDTO> save(@RequestBody ParkingCommand parkingCommand) {
+    public ResponseEntity<ParkingDTO> save(@RequestBody @Valid ParkingCommand parkingCommand) {
         return new ResponseEntity<>(modelMapper
                 .map(parkingService.save(modelMapper
                         .map(parkingCommand, Parking.class)), ParkingDTO.class),

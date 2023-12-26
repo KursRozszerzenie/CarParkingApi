@@ -3,7 +3,6 @@ package com.example.carparkingapi.command;
 import com.example.carparkingapi.model.Fuel;
 import lombok.Data;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -11,7 +10,6 @@ import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
 
 @Data
-@Valid
 public class CarCommand {
 
     @NotBlank(message = "Brand cannot be blank")

@@ -24,18 +24,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {CarNotFoundException.class, ParkingNotFoundException.class})
     protected ResponseEntity<ApiError> handleNotFoundException(RuntimeException runtimeException) {
-        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, runtimeException.getMessage());
-
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, runtimeException.getMessage()),
+                HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = {CarParkingStatusException.class, FullParkingException.class,
             ParkingSpaceToSmallException.class, LPGNotAllowedException.class, NoMoreElectricPlacesException.class})
     protected ResponseEntity<ApiError> handleParkingActionException(RuntimeException runtimeException) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, runtimeException.getMessage());
-
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ApiError(HttpStatus.BAD_REQUEST, runtimeException.getMessage()),
+                HttpStatus.BAD_REQUEST);
     }
+
+
 
     @ExceptionHandler(value = ConstraintViolationException.class)
     protected ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException e) {
@@ -43,27 +43,28 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .toList();
 
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, errors);
-
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ApiError(HttpStatus.BAD_REQUEST, errors), HttpStatus.BAD_REQUEST);
     }
 
     @Override
     protected @NotNull ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e,
-                           @NotNull HttpHeaders headers, @NotNull HttpStatus status, @NotNull WebRequest request) {
+                                                                           @NotNull HttpHeaders headers,
+                                                                           @NotNull HttpStatus status,
+                                                                           @NotNull WebRequest request) {
 
         List<String> errors = e.getBindingResult().getAllErrors().stream()
                 .map(error -> error instanceof FieldError fieldError ? fieldError.getField() + ": " +
                         fieldError.getDefaultMessage() : error.getDefaultMessage())
                 .toList();
 
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, errors);
-        return new ResponseEntity<>(apiError, headers, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ApiError(HttpStatus.BAD_REQUEST, errors), headers, HttpStatus.BAD_REQUEST);
     }
 
     @Override
     protected @NotNull ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e,
-                           @NotNull HttpHeaders headers, @NotNull HttpStatus status, @NotNull WebRequest request) {
+                                                                           @NotNull HttpHeaders headers,
+                                                                           @NotNull HttpStatus status,
+                                                                           @NotNull WebRequest request) {
 
         if (e.getCause() instanceof InvalidFormatException ife) {
 
@@ -71,11 +72,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                     .map(ref -> ref.getFieldName() + ": Invalid format or value")
                     .collect(Collectors.joining(", "));
 
-            ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, detailedError);
-            return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiError(HttpStatus.BAD_REQUEST, detailedError), HttpStatus.BAD_REQUEST);
         }
 
-        ApiError apiError = new ApiError(status, "Invalid request body");
-        return new ResponseEntity<>(apiError, headers, status);
+        return new ResponseEntity<>(new ApiError(status, "Invalid request body"), headers, status);
     }
 }

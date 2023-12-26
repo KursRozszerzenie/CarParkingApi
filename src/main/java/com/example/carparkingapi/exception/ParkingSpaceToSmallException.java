@@ -1,9 +1,12 @@
 package com.example.carparkingapi.exception;
 
-public class ParkingSpaceToSmallException extends RuntimeException {
-    public ParkingSpaceToSmallException() {
-    }
+import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+@NoArgsConstructor
+public class ParkingSpaceToSmallException extends RuntimeException {
     public ParkingSpaceToSmallException(String message) {
         super(message);
     }

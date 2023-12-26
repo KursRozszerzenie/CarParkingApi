@@ -1,7 +1,7 @@
 package com.example.carparkingapi.service;
 
-import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.domain.Car;
+import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.exception.CarNotFoundException;
 import com.example.carparkingapi.exception.ParkingNotFoundException;
