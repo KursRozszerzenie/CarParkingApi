@@ -7,6 +7,8 @@ import io.jsonwebtoken.ExpiredJwtException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -18,9 +20,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-
-import static org.yaml.snakeyaml.tokens.Token.ID.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -35,19 +37,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authenticationHeader = request.getHeader("Authorization");
         final String jsonWebToken;
         final String userLogin;
-        if(Objects.isNull(authenticationHeader) || !authenticationHeader.startsWith("Bearer ")){
+        if (Objects.isNull(authenticationHeader) || !authenticationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
+            return;
         }
 
         jsonWebToken = authenticationHeader.substring(7);
         try {
             userLogin = jwtService.extractUserLogin(jsonWebToken);
-            if(Objects.nonNull(userLogin) && SecurityContextHolder.getContext().getAuthentication() == null){
-                if(jwtService.isTokenValid(jsonWebToken, getUserDetails(jsonWebToken))){
+            if (Objects.nonNull(userLogin) && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (jwtService.isTokenValid(jsonWebToken, getUserDetails(jsonWebToken))) {
                     setAuthenticationContext(jsonWebToken, request);
                 }
             }
-        } catch (ExpiredJwtException e){
+        } catch (ExpiredJwtException e) {
             request.setAttribute("expired", e.getMessage());
         }
         filterChain.doFilter(request, response);
@@ -61,12 +64,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 
-    private UserDetails getUserDetails(String jsonWebToken){
+    private UserDetails getUserDetails(String jsonWebToken){ // ta metoda do poprawy
         Customer userDetails = new Customer();
         Claims claims = jwtService.extractAllClaims(jsonWebToken);
         String[] jwtSubject = jwtService.extractUserLogin(jsonWebToken).split(",");
         String role = (String) claims.get("role");
         role = role.replace("Role.", "");
+
         userDetails.setId(Long.valueOf(jwtSubject[0]));
         userDetails.setUsername(jwtSubject[1]);
         userDetails.setRole(Role.valueOf(role));

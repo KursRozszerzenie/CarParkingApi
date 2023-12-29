@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="changesets/Parking.xml" relativeToChangelogFile="true"/>
-    <include file="changesets/Car.xml" relativeToChangelogFile="true"/>
     <include file="changesets/Customer.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/Car.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

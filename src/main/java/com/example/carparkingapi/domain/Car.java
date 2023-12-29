@@ -48,4 +48,8 @@ public class Car {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parking_id")
     private Parking parking;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 }

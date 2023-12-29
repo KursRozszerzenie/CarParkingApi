@@ -41,18 +41,18 @@ public class Customer implements UserDetails, Serializable {
     @ToString.Exclude
     @OneToMany(mappedBy = "customer")
     private List<Car> cars = new ArrayList<>();
-
-    @Transient
-    private Boolean expired;
-
-    @Transient
-    private Boolean locked;
-
-    @Transient
-    private Boolean enabled;
-
-    @Transient
-    private Boolean credentialsExpired;
+//
+//    @Transient
+//    private Boolean expired;
+//
+//    @Transient
+//    private Boolean locked;
+//
+//    @Transient
+//    private Boolean enabled;
+//
+//    @Transient
+//    private Boolean credentialsExpired;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -66,21 +66,22 @@ public class Customer implements UserDetails, Serializable {
 
     @Override
     public boolean isAccountNonExpired() {
-        return !expired;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return !locked;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return !credentialsExpired;
+        return true;
     }
+
 }

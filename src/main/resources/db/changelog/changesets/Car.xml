@@ -32,6 +32,9 @@
             <column name="parking_id" type="bigint">
                 <constraints nullable="true" foreignKeyName="fk_car_parking" references="parking(id)"/>
             </column>
+            <column name="customer_id" type="bigint">
+                <constraints nullable="true" foreignKeyName="fk_car_customer" references="customer(id)"/>
+            </column>
         </createTable>
     </changeSet>
 </databaseChangeLog>
