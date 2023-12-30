@@ -36,7 +36,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
-
     @ExceptionHandler(value = ConstraintViolationException.class)
     protected ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException e) {
         List<String> errors = e.getConstraintViolations().stream()
