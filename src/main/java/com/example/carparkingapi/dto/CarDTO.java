@@ -20,4 +20,5 @@ public class CarDTO {
     private Integer width;
 
     private LocalDate dateOfProduction;
+
 }

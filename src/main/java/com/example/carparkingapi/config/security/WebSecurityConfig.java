@@ -64,7 +64,7 @@ public class WebSecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers(request -> request.getServletPath().startsWith("/api/v1/auth"))
+                .requestMatchers(request -> request.getServletPath().startsWith("/api/v1/customer"))
                 .permitAll()
                 .anyRequest()
                 .authenticated()

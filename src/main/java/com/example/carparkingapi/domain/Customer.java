@@ -39,20 +39,8 @@ public class Customer implements UserDetails, Serializable {
     private Role role;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Car> cars = new ArrayList<>();
-//
-//    @Transient
-//    private Boolean expired;
-//
-//    @Transient
-//    private Boolean locked;
-//
-//    @Transient
-//    private Boolean enabled;
-//
-//    @Transient
-//    private Boolean credentialsExpired;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -83,5 +71,4 @@ public class Customer implements UserDetails, Serializable {
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
 }

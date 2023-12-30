@@ -49,7 +49,7 @@ public class Car {
     @JoinColumn(name = "parking_id")
     private Parking parking;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 }

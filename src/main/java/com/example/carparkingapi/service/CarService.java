@@ -9,7 +9,9 @@ import com.example.carparkingapi.model.ParkingType;
 import com.example.carparkingapi.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -47,8 +49,13 @@ public class CarService {
         return carRepository.saveAll(cars);
     }
 
-    public CarDTO parkCar(Long carId, Long parkingId) {
+    public CarDTO parkCar(Long carId, Long parkingId, String currentUsername) {
         Car car = findById(carId);
+
+        if (!car.getCustomer().getUsername().equals(currentUsername)) {
+            throw new AccessDeniedException("You are not the owner of this car");
+        }
+
         if (car.getParking() != null) {
             throw new CarParkingStatusException("Car is already parked");
         }
@@ -66,8 +73,14 @@ public class CarService {
         return modelMapper.map(carRepository.save(car), CarDTO.class);
     }
 
-    public void leaveParking(Long carId) {
+
+    public void leaveParking(Long carId, String currentUsername) {
         Car car = findById(carId);
+
+        if (!car.getCustomer().getUsername().equals(currentUsername)) {
+            throw new AccessDeniedException("You are not the owner of this car");
+        }
+
         Parking parking = Optional.ofNullable(car.getParking())
                 .orElseThrow(() -> new CarParkingStatusException("Car is not parked"));
 
@@ -80,6 +93,7 @@ public class CarService {
         car.setParking(null);
         carRepository.save(car);
     }
+
 
     private void validateParkingSpace(Parking parking, Car car) {
         if (parking.getTakenPlaces() >= parking.getCapacity()) {

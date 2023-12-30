@@ -1,5 +1,6 @@
 package com.example.carparkingapi.config.security.authentication;
 
+import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.config.security.jwt.JwtService;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.model.Role;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthenticationResponse register(CustomerCommand request) {
         Customer customer = Customer.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
