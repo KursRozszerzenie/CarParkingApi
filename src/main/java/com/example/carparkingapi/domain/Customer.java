@@ -39,17 +39,12 @@ public class Customer implements UserDetails, Serializable {
     private Role role;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<Car> cars = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
     }
 
     @Override

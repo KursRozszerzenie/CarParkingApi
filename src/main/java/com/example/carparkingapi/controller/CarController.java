@@ -32,19 +32,15 @@ public class CarController {
 
     private final CustomerRepository customerRepository;
 
-    @PostMapping
+    @PostMapping()
     public ResponseEntity<CarDTO> save(@RequestBody @Valid CarCommand carCommand) {
         Customer customer = customerRepository.findById(carCommand.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 
         Car car = modelMapper.map(carCommand, Car.class);
-        car.setCustomer(customer); // Set customer in car
+        car.setCustomer(customer);
 
-        Car savedCar = carService.save(car); // Save car (which now has a reference to the customer)
-
-        customer.getCars().add(savedCar); // Add car to customer's list
-        customerRepository.save(customer); // Save customer
-
+        Car savedCar = carService.save(car);
         return new ResponseEntity<>(modelMapper.map(savedCar, CarDTO.class), HttpStatus.CREATED);
     }
 

@@ -7,11 +7,11 @@ import com.example.carparkingapi.exception.*;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.model.ParkingType;
 import com.example.carparkingapi.repository.CarRepository;
+import com.example.carparkingapi.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -43,6 +43,14 @@ public class CarService {
     public void delete(Long id) {
         Car car = findById(id);
         carRepository.delete(car);
+    }
+
+    public List<CarDTO> findAllCarsByCustomerId(Long id) {
+        return carRepository.findAllByCustomerId(id)
+                .orElseThrow(() -> new CarNotFoundException("No cars found"))
+                .stream()
+                .map(car -> modelMapper.map(car, CarDTO.class))
+                .toList();
     }
 
     public List<Car> saveAll(List<Car> cars) {

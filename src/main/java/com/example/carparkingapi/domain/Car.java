@@ -1,9 +1,7 @@
 package com.example.carparkingapi.domain;
 
 import com.example.carparkingapi.model.Fuel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -13,7 +11,10 @@ import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 
 @Entity
-@Data
+@ToString
+@Getter
+@Setter
+@EqualsAndHashCode
 @Valid
 @AllArgsConstructor
 @NoArgsConstructor
@@ -45,10 +46,12 @@ public class Car {
     @Enumerated(EnumType.STRING)
     private Fuel fuel;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parking_id")
     private Parking parking;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id")
     private Customer customer;
