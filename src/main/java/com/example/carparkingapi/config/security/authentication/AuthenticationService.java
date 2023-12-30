@@ -39,17 +39,9 @@ public class AuthenticationService {
 
         repository.save(customer);
 
-        Map<String, Object> extraClaims = new HashMap<>();
-
-        Collection<? extends GrantedAuthority> authorities = customer.getAuthorities();
-        String roles = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-        extraClaims.put("role", roles); // thats some shit
-
         return AuthenticationResponse
                 .builder()
-                .token(jwtService.generateToken(extraClaims, customer))
+                .token(jwtService.generateToken(customer))
                 .build();
     }
 

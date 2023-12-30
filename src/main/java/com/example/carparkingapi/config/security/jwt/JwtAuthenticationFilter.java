@@ -64,16 +64,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 
-    private UserDetails getUserDetails(String jsonWebToken){ // ta metoda do poprawy
-        Customer userDetails = new Customer();
+    private UserDetails getUserDetails(String jsonWebToken) {
         Claims claims = jwtService.extractAllClaims(jsonWebToken);
-        String[] jwtSubject = jwtService.extractUserLogin(jsonWebToken).split(",");
-        String role = (String) claims.get("role");
-        role = role.replace("Role.", "");
+        String username = jwtService.extractUserLogin(jsonWebToken);
+        String roleString = claims.get("role", String.class);
+        Role role = null;
+        if (roleString != null) {
+            roleString = roleString.replace("Role.", "");
+            role = Role.valueOf(roleString);
+        } else {
+            throw new NullPointerException("Role is null");
+        }
 
-        userDetails.setId(Long.valueOf(jwtSubject[0]));
-        userDetails.setUsername(jwtSubject[1]);
-        userDetails.setRole(Role.valueOf(role));
+        Customer userDetails = new Customer();
+        userDetails.setUsername(username);
+        userDetails.setRole(role);
+
         return userDetails;
     }
 }

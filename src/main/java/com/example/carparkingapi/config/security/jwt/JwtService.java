@@ -5,16 +5,16 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import liquibase.pro.packaged.S;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -48,7 +48,7 @@ public class JwtService {
     protected boolean isTokenValid(String jsonWebToken, UserDetails userDetails){
         String[] jwtSubject = extractUserLogin(jsonWebToken).split(",");
         final String role = (String) extractClaim(jsonWebToken, claims -> claims.get("role"));
-        return jwtSubject[1].equals(userDetails.getUsername()) &&
+        return jwtSubject[0].equals(userDetails.getUsername()) &&
                 !isTokenExpired(jsonWebToken) &&
                 Objects.equals(role, userDetails.getAuthorities().iterator().next().getAuthority());
     }
@@ -63,17 +63,19 @@ public class JwtService {
 
 
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails) {
+
+        Map<String, String> extraClaims = new HashMap<>();
+        extraClaims.put("role", userDetails.getAuthorities().stream()
+                                    .map(GrantedAuthority::getAuthority)
+                                    .collect(Collectors.joining(",")));
+
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS512) // czy ten algorytm jest ok?
+                .signWith(getSignInKey(), SignatureAlgorithm.HS512)
                 .compact();
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
     }
 }
