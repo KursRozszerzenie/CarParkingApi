@@ -7,10 +7,8 @@ import com.example.carparkingapi.exception.*;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.model.ParkingType;
 import com.example.carparkingapi.repository.CarRepository;
-import com.example.carparkingapi.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -57,12 +55,8 @@ public class CarService {
         return carRepository.saveAll(cars);
     }
 
-    public CarDTO parkCar(Long carId, Long parkingId, String currentUsername) {
+    public CarDTO parkCar(Long carId, Long parkingId) {
         Car car = findById(carId);
-
-        if (!car.getCustomer().getUsername().equals(currentUsername)) {
-            throw new AccessDeniedException("You are not the owner of this car");
-        }
 
         if (car.getParking() != null) {
             throw new CarParkingStatusException("Car is already parked");
@@ -82,12 +76,9 @@ public class CarService {
     }
 
 
-    public void leaveParking(Long carId, String currentUsername) {
+    public void leaveParking(Long carId) {
         Car car = findById(carId);
 
-        if (!car.getCustomer().getUsername().equals(currentUsername)) {
-            throw new AccessDeniedException("You are not the owner of this car");
-        }
 
         Parking parking = Optional.ofNullable(car.getParking())
                 .orElseThrow(() -> new CarParkingStatusException("Car is not parked"));
@@ -118,32 +109,28 @@ public class CarService {
         }
     }
 
-    public CarDTO findMostExpensiveCar() {
-        return carRepository.findAll().stream()
+    public Car findMostExpensiveCar(Long customerId) {
+        return carRepository.findByCustomerId(customerId).stream()
                 .max(Comparator.comparing(Car::getPrice))
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .orElseThrow(() -> new CarNotFoundException("No cars found"));
+                .orElseThrow(() -> new CarNotFoundException("No cars found for customer " + customerId));
     }
 
-    public CarDTO findMostExpensiveCarByBrand(String brand) {
-        return carRepository.findAll().stream()
-                .filter(car -> car.getBrand().equals(brand))
+    public Car findMostExpensiveCarByBrand(Long customerId, String brand) {
+        return carRepository.findAllByCustomerIdAndBrand(customerId, brand)
+                .orElseThrow(() -> new CarNotFoundException("No cars found for customer " + customerId + " and brand " + brand))
+                .stream()
                 .max(Comparator.comparing(Car::getPrice))
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .orElseThrow(() -> new CarNotFoundException("No cars found"));
+                .orElseThrow(() -> new CarNotFoundException("No cars found for customer " + customerId + " and brand " + brand));
     }
 
-    public List<CarDTO> findAllCarsByBrand(String brand) {
-        return carRepository.findAll().stream()
-                .filter(car -> car.getBrand().equals(brand))
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .toList();
+
+    public List<Car> findAllCarsByBrand(Long customerId, String brand) {
+        return carRepository.findAllByCustomerIdAndBrand(customerId, brand).orElseThrow(
+                () -> new CarNotFoundException("No cars found for customer " + customerId + " and brand " + brand));
     }
 
-    public List<CarDTO> findAllCarsByFuel(Fuel fuel) {
-        return carRepository.findAll().stream()
-                .filter(car -> car.getFuel().equals(fuel))
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .toList();
+    public List<Car> findAllCarsByFuel(Long customerId, Fuel fuel) {
+        return carRepository.findByCustomerIdAndFuel(customerId, fuel).orElseThrow(
+                () -> new CarNotFoundException("No cars found for customer " + customerId + " and fuel " + fuel));
     }
 }

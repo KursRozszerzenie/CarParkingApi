@@ -32,7 +32,4 @@ public class CarCommand {
 
     @NotNull(message = "Date of production cannot be null")
     private LocalDate dateOfProduction;
-
-    @NotNull(message = "Parking id cannot be null")
-    private Long customerId;
 }

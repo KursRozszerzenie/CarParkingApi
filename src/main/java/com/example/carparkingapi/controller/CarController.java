@@ -1,7 +1,5 @@
 package com.example.carparkingapi.controller;
 
-import com.example.carparkingapi.command.CarCommand;
-import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.model.Fuel;
@@ -17,9 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityNotFoundException;
-import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping("/api/v1/car")
 @RestController
@@ -32,27 +29,6 @@ public class CarController {
 
     private final CustomerRepository customerRepository;
 
-    @PostMapping()
-    public ResponseEntity<CarDTO> save(@RequestBody @Valid CarCommand carCommand) {
-        Customer customer = customerRepository.findById(carCommand.getCustomerId())
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
-
-        Car car = modelMapper.map(carCommand, Car.class);
-        car.setCustomer(customer);
-
-        Car savedCar = carService.save(car);
-        return new ResponseEntity<>(modelMapper.map(savedCar, CarDTO.class), HttpStatus.CREATED);
-    }
-
-    @PostMapping("/save/batch")
-    public ResponseEntity<List<CarDTO>> saveAll(@RequestBody @Valid List<CarCommand> carCommands) {
-        return new ResponseEntity<>(carService.saveAll(carCommands.stream()
-                        .map(command -> modelMapper.map(command, Car.class))
-                        .toList()).stream()
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .toList(), HttpStatus.CREATED);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<CarDTO> getCarById(@PathVariable Long id) {
         return new ResponseEntity<>(modelMapper
@@ -60,31 +36,24 @@ public class CarController {
                 HttpStatus.OK);
     }
 
-    @GetMapping
-    public ResponseEntity<List<CarDTO>> getAllCars() {
-        return new ResponseEntity<>(carService.findAll().stream()
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .toList(), HttpStatus.OK);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCar(@PathVariable Long id) {
         carService.delete(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
-    @PostMapping("/{id}/park/{parkingId}")
-    public ResponseEntity<CarDTO> parkCar(@PathVariable Long id, @PathVariable Long parkingId) {
-        String currentUsername = getCurrentUsername();
-        return new ResponseEntity<>(carService.parkCar(id, parkingId, currentUsername), HttpStatus.OK);
-    }
-
-    @PostMapping("/{carId}/leave")
-    public ResponseEntity<Void> leaveParking(@PathVariable Long carId) {
-        String currentUsername = getCurrentUsername();
-        carService.leaveParking(carId, currentUsername);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//
+//    @PostMapping("/{id}/park/{parkingId}")
+//    public ResponseEntity<CarDTO> parkCar(@PathVariable Long id, @PathVariable Long parkingId) {
+//        String currentUsername = getCurrentUsername();
+//        return new ResponseEntity<>(carService.parkCar(id, parkingId, currentUsername), HttpStatus.OK);
+//    }
+//
+//    @PostMapping("/{carId}/leave")
+//    public ResponseEntity<Void> leaveParking(@PathVariable Long carId) {
+//        String currentUsername = getCurrentUsername();
+//        carService.leaveParking(carId, currentUsername);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     private String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -95,31 +64,33 @@ public class CarController {
     }
 
 
-    @GetMapping("/mostExpensive")
-    public ResponseEntity<CarDTO> getMostExpensiveCar() {
-        return new ResponseEntity<>(modelMapper
-                .map(carService.findMostExpensiveCar(), CarDTO.class),
-                HttpStatus.OK);
-    }
+//    @GetMapping("/mostExpensive")
+//    public ResponseEntity<CarDTO> getMostExpensiveCar() {
+//        return new ResponseEntity<>(modelMapper
+//                .map(carService.findMostExpensiveCar(), CarDTO.class),
+//                HttpStatus.OK);
+//    }
+//
+//    @GetMapping("/mostExpensive/{brand}")
+//    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand) {
+//        return new ResponseEntity<>(modelMapper
+//                .map(carService.findMostExpensiveCarByBrand(brand), CarDTO.class),
+//                HttpStatus.OK);
+//    }
+//
+//    @GetMapping("/all/brand/{brand}")
+//    public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable String brand) {
+//        return new ResponseEntity<>(carService.findAllCarsByBrand(brand).stream()
+//                .map(car -> modelMapper.map(car, CarDTO.class))
+//                .toList(), HttpStatus.OK);
+//    }
+//
+//    @GetMapping("/all/fuel/{fuel}")
+//    public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel) {
+//        return new ResponseEntity<>(carService.findAllCarsByFuel(fuel).stream()
+//                .map(car -> modelMapper.map(car, CarDTO.class))
+//                .toList(), HttpStatus.OK);
+//    }
 
-    @GetMapping("/mostExpensive/{brand}")
-    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand) {
-        return new ResponseEntity<>(modelMapper
-                .map(carService.findMostExpensiveCarByBrand(brand), CarDTO.class),
-                HttpStatus.OK);
-    }
 
-    @GetMapping("/all/brand/{brand}")
-    public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable String brand) {
-        return new ResponseEntity<>(carService.findAllCarsByBrand(brand).stream()
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .toList(), HttpStatus.OK);
-    }
-
-    @GetMapping("/all/fuel/{fuel}")
-    public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel) {
-        return new ResponseEntity<>(carService.findAllCarsByFuel(fuel).stream()
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .toList(), HttpStatus.OK);
-    }
 }

@@ -4,8 +4,8 @@ import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 
 @Service
@@ -27,20 +28,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
-        final String authenticationHeader = request.getHeader("Authorization");
-        final String jsonWebToken;
-        final String userLogin;
-        if (Objects.isNull(authenticationHeader) || !authenticationHeader.startsWith("Bearer ")) {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    @NotNull HttpServletResponse response,
+                                    @NotNull FilterChain filterChain) throws ServletException, IOException {
+
+        if (Arrays.asList("/api/v1/customer/register", "/api/v1/customer/authenticate")
+                .contains(request.getServletPath())) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        jsonWebToken = authenticationHeader.substring(7);
+        final String authenticationHeader = request.getHeader("Authorization");
+
+        if (Objects.isNull(authenticationHeader) || !authenticationHeader.startsWith("Bearer ")) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: No JWT token provided");
+            return;
+        }
+
+        String jsonWebToken = authenticationHeader.substring(7);
         try {
-            userLogin = jwtService.extractUserLogin(jsonWebToken);
+            String userLogin = jwtService.extractUserLogin(jsonWebToken);
             if (Objects.nonNull(userLogin) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jsonWebToken, getUserDetails(jsonWebToken))) {
                     setAuthenticationContext(jsonWebToken, request);
@@ -48,9 +56,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e) {
             request.setAttribute("expired", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: JWT token expired");
+            return;
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Invalid JWT token");
+            return;
         }
+
         filterChain.doFilter(request, response);
     }
+
 
     private void setAuthenticationContext(String jsonWebToken, HttpServletRequest request) {
         UserDetails userDetails = getUserDetails(jsonWebToken);

@@ -64,7 +64,8 @@ public class WebSecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers(request -> request.getServletPath().startsWith("/api/v1/customer"))
+                .requestMatchers(request -> request.getServletPath().startsWith("/api/v1/customer/register"),
+                        request -> request.getServletPath().startsWith("/api/v1/customer/authenticate"))
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -76,11 +77,10 @@ public class WebSecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(entryPoint)
-                .accessDeniedHandler(accessDeniedHandler())
-                .and()
-                .httpBasic();
+                .accessDeniedHandler(accessDeniedHandler());
 
         return http.build();
     }
+
 }
 
