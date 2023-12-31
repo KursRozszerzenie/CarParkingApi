@@ -32,12 +32,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (Arrays.asList("/api/v1/customer/register", "/api/v1/customer/authenticate")
+        if (Arrays.asList("/api/v1/customer/register", "/api/v1/customer/authenticate", "/api/v1/admin/authenticate")
                 .contains(request.getServletPath())) {
-
             filterChain.doFilter(request, response);
             return;
         }
+
 
         final String authenticationHeader = request.getHeader("Authorization");
 

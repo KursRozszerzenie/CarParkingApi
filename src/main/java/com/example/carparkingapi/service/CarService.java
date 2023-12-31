@@ -107,7 +107,7 @@ public class CarService {
         }
     }
 
-    public Car findMostExpensiveCar(Long customerId) {
+    public Car findMostExpensiveCarForCustomer(Long customerId) {
         return carRepository.findByCustomerId(customerId).stream()
                 .max(Comparator.comparing(Car::getPrice))
                 .orElseThrow(() -> new CarNotFoundException("No cars found for customer " + customerId));
@@ -130,5 +130,11 @@ public class CarService {
     public List<Car> findAllCarsByFuel(Long customerId, Fuel fuel) {
         return carRepository.findByCustomerIdAndFuel(customerId, fuel).orElseThrow(
                 () -> new CarNotFoundException("No cars found for customer " + customerId + " and fuel " + fuel));
+    }
+
+    public Car findMostExpensiveCar() {
+        return carRepository.findAll().stream()
+                .max(Comparator.comparing(Car::getPrice))
+                .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
 }

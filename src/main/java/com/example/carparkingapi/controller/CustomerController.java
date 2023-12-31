@@ -26,7 +26,7 @@ import java.util.List;
 @RequestMapping("/api/v1/customer")
 public class CustomerController {
 
-    private final AuthenticationService service;
+    private final AuthenticationService authService;
 
     private final CarService carService;
 
@@ -36,15 +36,14 @@ public class CustomerController {
 
     private final CustomUserDetailsService customUserDetailsService;
 
-
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid CustomerCommand request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.register(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        return ResponseEntity.ok(service.authenticate(request));
+        return ResponseEntity.ok(authService.authenticate(request));
     }
 
     @GetMapping("/{customerId}/cars")
@@ -108,7 +107,7 @@ public class CustomerController {
         customUserDetailsService.verifyCustomerAccess(customerId);
 
         return new ResponseEntity<>(modelMapper.map(carService
-                .findMostExpensiveCar(customerId), CarDTO.class), HttpStatus.OK);
+                .findMostExpensiveCarForCustomer(customerId), CarDTO.class), HttpStatus.OK);
     }
 
     @GetMapping("/{customerId}/cars/most-expensive/{brand}")
