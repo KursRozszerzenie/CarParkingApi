@@ -1,7 +1,7 @@
 package com.example.carparkingapi.dto;
 
 import com.example.carparkingapi.model.Fuel;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDate;
 

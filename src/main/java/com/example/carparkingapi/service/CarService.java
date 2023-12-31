@@ -75,7 +75,6 @@ public class CarService {
         return modelMapper.map(carRepository.save(car), CarDTO.class);
     }
 
-
     public void leaveParking(Long carId) {
         Car car = findById(carId);
 
@@ -92,7 +91,6 @@ public class CarService {
         car.setParking(null);
         carRepository.save(car);
     }
-
 
     private void validateParkingSpace(Parking parking, Car car) {
         if (parking.getTakenPlaces() >= parking.getCapacity()) {

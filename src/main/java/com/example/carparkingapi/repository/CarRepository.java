@@ -2,7 +2,6 @@ package com.example.carparkingapi.repository;
 
 
 import com.example.carparkingapi.domain.Car;
-import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.model.Fuel;
 import org.springframework.data.jpa.repository.JpaRepository;
 
