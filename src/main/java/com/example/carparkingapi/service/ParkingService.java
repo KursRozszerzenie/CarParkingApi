@@ -1,5 +1,6 @@
 package com.example.carparkingapi.service;
 
+import com.example.carparkingapi.command.ParkingCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,6 +26,20 @@ public class ParkingService {
     public Parking save(Parking parking) {
         parking.setTakenPlaces(0);
         parking.setTakenElectricPlaces(0);
+        return parkingRepository.save(parking);
+    }
+
+    public Parking updateParking(Long parkingId, ParkingCommand parkingCommand) {
+        Parking parking = parkingRepository.findById(parkingId)
+                .orElseThrow(() -> new EntityNotFoundException("Parking not found"));
+        parking.setName(parkingCommand.getName());
+        parking.setAdress(parkingCommand.getAdress());
+        parking.setCapacity(parkingCommand.getCapacity());
+        parking.setParkingType(parkingCommand.getParkingType());
+        parking.setParkingSpotWidth(parkingCommand.getParkingSpotWidth());
+        parking.setParkingSpotLength(parkingCommand.getParkingSpotLength());
+        parking.setPlacesForElectricCars(parkingCommand.getPlacesForElectricCars());
+
         return parkingRepository.save(parking);
     }
 

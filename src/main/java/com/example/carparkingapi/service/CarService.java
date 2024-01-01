@@ -1,5 +1,6 @@
 package com.example.carparkingapi.service;
 
+import com.example.carparkingapi.command.CarCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -25,12 +27,24 @@ public class CarService {
 
     private final ModelMapper modelMapper;
 
+    private final CustomUserDetailsService customUserDetailsService;
+
     public Car save(Car car) {
         return carRepository.save(car);
     }
 
-    public List<Car> findAll() {
-        return carRepository.findAll();
+    public Car updateCar(Long carId, CarCommand carCommand) {
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new EntityNotFoundException("Car not found"));
+        car.setBrand(carCommand.getBrand());
+        car.setModel(carCommand.getModel());
+        car.setFuel(carCommand.getFuel());
+        car.setLength(carCommand.getLength());
+        car.setWidth(carCommand.getWidth());
+        car.setPrice(carCommand.getPrice());
+        car.setDateOfProduction(carCommand.getDateOfProduction());
+
+        return carRepository.save(car);
     }
 
     public Car findById(Long id) {
@@ -77,7 +91,6 @@ public class CarService {
 
     public void leaveParking(Long carId) {
         Car car = findById(carId);
-
 
         Parking parking = Optional.ofNullable(car.getParking())
                 .orElseThrow(() -> new CarParkingStatusException("Car is not parked"));
@@ -137,4 +150,7 @@ public class CarService {
                 .max(Comparator.comparing(Car::getPrice))
                 .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
+
+
+
 }

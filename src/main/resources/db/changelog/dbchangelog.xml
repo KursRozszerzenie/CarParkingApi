@@ -7,5 +7,6 @@
     <include file="changesets/Customer.xml" relativeToChangelogFile="true"/>
     <include file="changesets/Car.xml" relativeToChangelogFile="true"/>
     <include file="changesets/Admin.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/Action.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

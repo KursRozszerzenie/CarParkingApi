@@ -1,5 +1,6 @@
 package com.example.carparkingapi.service;
 
+import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.repository.AdminRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 @Service
@@ -66,4 +68,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         throw new AccessDeniedException("User not authenticated");
     }
+
+    public Customer updateCustomer(Long customerId, CustomerCommand customerCommand) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+
+        customer.setFirstName(customerCommand.getFirstName());
+        customer.setLastName(customerCommand.getLastName());
+        customer.setUsername(customerCommand.getUsername());
+        customer.setPassword(customerCommand.getPassword());
+
+        return customerRepository.save(customer);
+    }
+
 }
