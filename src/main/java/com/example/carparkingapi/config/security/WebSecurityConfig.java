@@ -3,6 +3,7 @@ package com.example.carparkingapi.config.security;
 import com.example.carparkingapi.config.CustomAccessDeniedHandler;
 import com.example.carparkingapi.config.security.authentication.CustomAuthenticationEntryPoint;
 import com.example.carparkingapi.config.security.jwt.JwtAuthenticationFilter;
+import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,8 @@ public class WebSecurityConfig {
 
     private final CustomerRepository customerRepository;
 
+    private final AdminRepository adminRepository;
+
     private final CustomAuthenticationEntryPoint entryPoint;
 
     @Bean
@@ -38,7 +41,7 @@ public class WebSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService(customerRepository);
+        return new CustomUserDetailsService(customerRepository, adminRepository);
     }
 
     @Bean

@@ -37,13 +37,13 @@ public class CustomerController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid CustomerCommand request) {
+    public ResponseEntity<AuthenticationResponse> registerAdmin(@RequestBody @Valid CustomerCommand request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        return ResponseEntity.ok(authService.authenticate(request));
+        return ResponseEntity.ok(authService.authenticateCustomer(request));
     }
 
     @GetMapping("/{customerId}/cars")

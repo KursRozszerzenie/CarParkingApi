@@ -6,5 +6,6 @@
     <include file="changesets/Parking.xml" relativeToChangelogFile="true"/>
     <include file="changesets/Customer.xml" relativeToChangelogFile="true"/>
     <include file="changesets/Car.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/Admin.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

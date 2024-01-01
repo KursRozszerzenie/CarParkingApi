@@ -1,9 +1,12 @@
 package com.example.carparkingapi.config.security.authentication;
 
+import com.example.carparkingapi.command.AdminCommand;
 import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.config.security.jwt.JwtService;
+import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.model.Role;
+import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +18,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final CustomerRepository repository;
+    private final CustomerRepository customerRepository;
+
+    private final AdminRepository adminRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -32,7 +37,7 @@ public class AuthenticationService {
                 .role(Role.USER)
                 .build();
 
-        repository.save(customer);
+        customerRepository.save(customer);
 
         return AuthenticationResponse
                 .builder()
@@ -40,7 +45,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponse authenticateCustomer(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -48,12 +53,29 @@ public class AuthenticationService {
                 )
         );
 
-        Customer customer = repository.findByUsername(request.getUsername())
+        Customer customer = customerRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         return AuthenticationResponse
                 .builder()
                 .token(jwtService.generateToken(customer))
+                .build();
+    }
+
+    public AuthenticationResponse authenticateAdmin(AdminCommand request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+
+        Admin admin = adminRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        return AuthenticationResponse
+                .builder()
+                .token(jwtService.generateToken(admin))
                 .build();
     }
 }

@@ -1,7 +1,11 @@
 package com.example.carparkingapi.service;
 
+import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
+import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -12,25 +16,46 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final CustomerRepository customerRepository;
 
+    private final AdminRepository adminRepository;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return customerRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("USER_NOT_FOUND", username)));
+        Optional<Customer> customerOptional = customerRepository.findByUsername(username);
+        if (customerOptional.isPresent()) {
+            return customerOptional.get();
+        }
+
+        Optional<Admin> adminOptional = adminRepository.findByUsername(username);
+        if (adminOptional.isPresent()) {
+            return adminOptional.get();
+        }
+
+        throw new UsernameNotFoundException("User not found with username: " + username);
     }
 
     public void verifyCustomerAccess(Long customerId) {
-        String currentUsername = getCurrentUsername();
-        Customer customer = customerRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new AccessDeniedException("Customer not authenticated"));
+        if (!customerRepository.findByUsername(getCurrentUsername())
+                .orElseThrow(() -> new AccessDeniedException("Customer not authenticated"))
+                .getId()
+                .equals(customerId)) {
+                    throw new AccessDeniedException("Access denied. You can only access your own data.");
+        }
+    }
 
-        if (!customer.getId().equals(customerId)) {
-            throw new AccessDeniedException("Access denied. You can only access your own data.");
+    public void verifyAdminAccess(Long adminId) {
+        if (!adminRepository.findByUsername(getCurrentUsername())
+            .orElseThrow(() -> new AccessDeniedException("admin not authenticated"))
+            .getId().
+            equals(adminId)) {
+                throw new AccessDeniedException("Access denied");
         }
     }
 
