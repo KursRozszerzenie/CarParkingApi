@@ -35,7 +35,7 @@ public class CarService {
 
     public Car updateCar(Long carId, CarCommand carCommand) {
         Car car = carRepository.findById(carId)
-                .orElseThrow(() -> new EntityNotFoundException("Car not found"));
+                .orElseThrow(() -> new CarNotFoundException("Car not found"));
         car.setBrand(carCommand.getBrand());
         car.setModel(carCommand.getModel());
         car.setFuel(carCommand.getFuel());

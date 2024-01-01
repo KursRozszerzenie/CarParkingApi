@@ -60,7 +60,6 @@ public class CustomerController {
         Car car = modelMapper.map(carCommand, Car.class);
         car.setCustomer(customerRepository.findByUsername(customUserDetailsService.getCurrentUsername())
                 .orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
-
         return new ResponseEntity<>(modelMapper.map(carService.save(car), CarDTO.class), HttpStatus.CREATED);
     }
 
@@ -90,7 +89,6 @@ public class CustomerController {
     @PostMapping("/{customerId}/cars/{carId}/park/{parkingId}")
     public ResponseEntity<CarDTO> parkCar(@PathVariable Long customerId, @PathVariable Long carId,
                                           @PathVariable Long parkingId) {
-
         customUserDetailsService.verifyCustomerAccess(customerId);
         return new ResponseEntity<>(carService.parkCar(carId, parkingId), HttpStatus.OK);
     }
@@ -105,7 +103,6 @@ public class CustomerController {
     @GetMapping("/{customerId}/cars/most-expensive")
     public ResponseEntity<CarDTO> getMostExpensiveCar(@PathVariable Long customerId) {
         customUserDetailsService.verifyCustomerAccess(customerId);
-
         return new ResponseEntity<>(modelMapper.map(carService
                 .findMostExpensiveCarForCustomer(customerId), CarDTO.class), HttpStatus.OK);
     }
@@ -113,7 +110,6 @@ public class CustomerController {
     @GetMapping("/{customerId}/cars/most-expensive/{brand}")
     public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable Long customerId,
                                                              @PathVariable String brand) {
-
         customUserDetailsService.verifyCustomerAccess(customerId);
         return new ResponseEntity<>(modelMapper.map(carService
                 .findMostExpensiveCarByBrand(customerId, brand), CarDTO.class), HttpStatus.OK);
@@ -122,7 +118,6 @@ public class CustomerController {
     @GetMapping("/{customerId}/cars/all/{brand}")
     public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable Long customerId, @PathVariable String brand) {
         customUserDetailsService.verifyCustomerAccess(customerId);
-
         return new ResponseEntity<>(carService.findAllCarsByBrand(customerId, brand).stream()
                 .map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.OK);
     }
@@ -130,7 +125,6 @@ public class CustomerController {
     @GetMapping("/{customerId}/cars/all/{fuel}")
     public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Long customerId, @PathVariable Fuel fuel) {
         customUserDetailsService.verifyCustomerAccess(customerId);
-
         return new ResponseEntity<>(carService.findAllCarsByFuel(customerId, fuel).stream()
                 .map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.OK);
     }

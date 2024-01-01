@@ -9,7 +9,7 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="action_type" type="varchar(255)">
-                <constraints nullable="false" unique="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="created_by" type="varchar(255)">
                 <constraints nullable="false"/>

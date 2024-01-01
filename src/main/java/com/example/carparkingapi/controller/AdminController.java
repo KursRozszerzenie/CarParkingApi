@@ -7,9 +7,9 @@ import com.example.carparkingapi.command.ParkingCommand;
 import com.example.carparkingapi.config.security.authentication.AuthenticationResponse;
 import com.example.carparkingapi.config.security.authentication.AuthenticationService;
 import com.example.carparkingapi.domain.Car;
-import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
+import com.example.carparkingapi.dto.CustomerDTO;
 import com.example.carparkingapi.dto.ParkingDTO;
 import com.example.carparkingapi.model.ActionType;
 import com.example.carparkingapi.service.ActionService;
@@ -66,13 +66,13 @@ public class AdminController {
     }
 
     @PutMapping("{adminId}/customers/update/{customerId}")
-    public ResponseEntity<Customer> updateCustomer(@PathVariable Long adminId, @PathVariable Long customerId,
-                                                   @RequestBody @Valid CustomerCommand customerCommand) {
+    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long adminId, @PathVariable Long customerId,
+                                                      @RequestBody @Valid CustomerCommand customerCommand) {
         customUserDetailsService.verifyAdminAccess(adminId);
         actionService.logAction(ActionType.UPDATING_CUSTOMER);
-        return new ResponseEntity<>(customUserDetailsService.updateCustomer(customerId, customerCommand), HttpStatus.OK);
+        return new ResponseEntity<>(modelMapper.map(customUserDetailsService.updateCustomer(customerId, customerCommand),
+                CustomerDTO.class), HttpStatus.OK);
     }
-
 
     @PostMapping("{adminId}/cars/add")
     public ResponseEntity<CarDTO> addCar(@PathVariable Long adminId,

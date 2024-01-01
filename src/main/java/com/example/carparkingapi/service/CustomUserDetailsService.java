@@ -71,7 +71,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public Customer updateCustomer(Long customerId, CustomerCommand customerCommand) {
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Customer not found"));
 
         customer.setFirstName(customerCommand.getFirstName());
         customer.setLastName(customerCommand.getLastName());
