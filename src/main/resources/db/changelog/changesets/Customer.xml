@@ -23,6 +23,18 @@
             <column name="role" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
+            <column name="account_enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_non_expired" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_non_locked" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="credentials_non_expired" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 </databaseChangeLog>

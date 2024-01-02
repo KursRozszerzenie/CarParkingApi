@@ -37,8 +37,8 @@ public class CustomerController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> registerAdmin(@RequestBody @Valid CustomerCommand request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    public ResponseEntity<AuthenticationResponse> registerCustomer(@RequestBody @Valid CustomerCommand request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerCustomer(request));
     }
 
     @PostMapping("/authenticate")

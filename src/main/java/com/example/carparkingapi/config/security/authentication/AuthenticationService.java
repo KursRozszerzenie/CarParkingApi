@@ -28,12 +28,16 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(CustomerCommand request) {
+    public AuthenticationResponse registerCustomer(CustomerCommand request) {
         Customer customer = Customer.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .credentialsNonExpired(true)
+                .accountNonExpired(true)
+                .accountNonLocked(true)
+                .accountEnabled(true)
                 .role(Role.USER)
                 .build();
 
@@ -46,15 +50,15 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticateCustomer(AuthenticationRequest request) {
+        Customer customer = customerRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
                         request.getPassword()
                 )
         );
-
-        Customer customer = customerRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         return AuthenticationResponse
                 .builder()
@@ -63,15 +67,15 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticateAdmin(AdminCommand request) {
+        Admin admin = adminRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
                         request.getPassword()
                 )
         );
-
-        Admin admin = adminRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
 
         return AuthenticationResponse
                 .builder()

@@ -8,6 +8,7 @@ import com.example.carparkingapi.exception.CarNotFoundException;
 import com.example.carparkingapi.exception.CarParkingStatusException;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.repository.CarRepository;
+import com.example.carparkingapi.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ import java.util.Optional;
 public class CarService {
 
     private final CarRepository carRepository;
+
+    private final CustomerRepository customerRepository;
 
     private final ParkingService parkingService;
 
@@ -36,11 +39,11 @@ public class CarService {
     }
 
     public List<Car> saveAll(List<Car> cars) {
-        return carRepository.saveAll(cars);
+       return carRepository.saveAll(cars);
     }
 
     public Car updateCar(Long carId, CarCommand carCommand) {
-        Car car = carRepository.findById(carId)
+       Car car = carRepository.findById(carId)
                 .orElseThrow(() -> new CarNotFoundException("Car not found"));
         car.setBrand(carCommand.getBrand());
         car.setModel(carCommand.getModel());
@@ -54,7 +57,7 @@ public class CarService {
     }
 
     public String delete(Long id) {
-        carRepository.delete(findById(id));
+       carRepository.delete(findById(id));
         return "Car with id " + id + " deleted";
     }
 
@@ -98,7 +101,7 @@ public class CarService {
 
     public List<CarDTO> findAllCarsByCustomerId(Long id) {
         return carRepository.findAllByCustomerId(id)
-                .orElseThrow(() -> new CarNotFoundException("No cars found"))
+                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(id, null)))
                 .stream()
                 .map(car -> modelMapper.map(car, CarDTO.class))
                 .toList();
@@ -107,31 +110,43 @@ public class CarService {
     public Car findMostExpensiveCarForCustomer(Long customerId) {
         return carRepository.findByCustomerId(customerId).stream()
                 .max(Comparator.comparing(Car::getPrice))
-                .orElseThrow(() -> new CarNotFoundException("No cars found for customer " + customerId));
+                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(customerId, null)));
     }
 
     public Car findMostExpensiveCarByBrand(Long customerId, String brand) {
         return carRepository.findAllByCustomerIdAndBrand(customerId, brand)
-                .orElseThrow(() -> new CarNotFoundException("No cars found for customer " + customerId + " and brand " + brand))
+                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(customerId, brand)))
                 .stream()
                 .max(Comparator.comparing(Car::getPrice))
-                .orElseThrow(() -> new CarNotFoundException("No cars found for customer " + customerId + " and brand " + brand));
+                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(customerId, brand)));
     }
 
 
     public List<Car> findAllCarsByBrand(Long customerId, String brand) {
         return carRepository.findAllByCustomerIdAndBrand(customerId, brand).orElseThrow(
-                () -> new CarNotFoundException("No cars found for customer " + customerId + " and brand " + brand));
+                () -> new CarNotFoundException(carNotFoundMessage(customerId, brand)));
     }
 
     public List<Car> findAllCarsByFuel(Long customerId, Fuel fuel) {
         return carRepository.findByCustomerIdAndFuel(customerId, fuel).orElseThrow(
-                () -> new CarNotFoundException("No cars found for customer " + customerId + " and fuel " + fuel));
+                () -> new CarNotFoundException(carNotFoundMessage(customerId, fuel.name())));
     }
 
     public Car findMostExpensiveCar() {
         return carRepository.findAll().stream()
                 .max(Comparator.comparing(Car::getPrice))
                 .orElseThrow(() -> new CarNotFoundException("No cars found"));
+    }
+
+    public String carNotFoundMessage(Long id, String value) {
+        String str = "No cars found for customer " + customerRepository.findById(id).orElseThrow().getUsername();
+        if (value == null) {
+            return str;
+        } else if (value.equals("DIESEL") || value.equals("PETROL") || value.equals("ELECTRIC")
+                || value.equals("HYBRID") || value.equals("LPG")) {
+            return str + " and fuel " + value;
+        } else {
+            return str + " and brand " + value;
+        }
     }
 }

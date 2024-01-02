@@ -17,15 +17,24 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {CarNotFoundException.class, ParkingNotFoundException.class, UsernameNotFoundException.class})
+    @ExceptionHandler(value = {CarNotFoundException.class, ParkingNotFoundException.class, UsernameNotFoundException.class,
+            CustomerNotFoundException.class})
     protected ResponseEntity<ApiError> handleNotFoundException(RuntimeException runtimeException) {
         return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, runtimeException.getMessage()),
+                HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {InvalidCredentialsException.class, UserNotAuthenticatedException.class,
+            AccessDeniedException.class})
+    protected ResponseEntity<ApiError> handleAuthenticationException(RuntimeException runtimeException) {
+        return new ResponseEntity<>(new ApiError(HttpStatus.FORBIDDEN, runtimeException.getMessage()),
                 HttpStatus.NOT_FOUND);
     }
 

@@ -1,6 +1,6 @@
 package com.example.carparkingapi.config.jpa;
 
-import com.example.carparkingapi.config.security.audition.SpringSecurityAuditorAware;
+import com.example.carparkingapi.action.SpringSecurityAuditorAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;

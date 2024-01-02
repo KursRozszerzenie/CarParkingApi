@@ -35,6 +35,14 @@ public class Customer implements UserDetails, Serializable {
 
     private String password;
 
+    private boolean accountEnabled;
+
+    private boolean accountNonExpired;
+
+    private boolean accountNonLocked;
+
+    private boolean credentialsNonExpired;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -49,21 +57,22 @@ public class Customer implements UserDetails, Serializable {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+        return accountNonExpired;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return credentialsNonExpired;
     }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return accountNonLocked;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return accountEnabled;
+    }
+
 }

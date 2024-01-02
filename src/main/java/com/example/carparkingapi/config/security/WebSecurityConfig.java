@@ -44,7 +44,7 @@ public class WebSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService(customerRepository, adminRepository, actionService);
+        return new CustomUserDetailsService(customerRepository, adminRepository);
     }
 
     @Bean
