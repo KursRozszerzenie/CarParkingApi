@@ -5,6 +5,7 @@ import com.example.carparkingapi.config.security.authentication.CustomAuthentica
 import com.example.carparkingapi.config.security.jwt.JwtAuthenticationFilter;
 import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
+import com.example.carparkingapi.service.ActionService;
 import com.example.carparkingapi.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +35,8 @@ public class WebSecurityConfig {
 
     private final CustomAuthenticationEntryPoint entryPoint;
 
+    private final ActionService actionService;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -41,7 +44,7 @@ public class WebSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService(customerRepository, adminRepository);
+        return new CustomUserDetailsService(customerRepository, adminRepository, actionService);
     }
 
     @Bean

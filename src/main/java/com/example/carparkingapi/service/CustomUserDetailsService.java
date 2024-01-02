@@ -32,47 +32,24 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final ActionService actionService;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Customer> customerOptional = customerRepository.findByUsername(username);
-        if (customerOptional.isPresent()) {
-            return customerOptional.get();
-        }
-
-        Optional<Admin> adminOptional = adminRepository.findByUsername(username);
-        if (adminOptional.isPresent()) {
-            return adminOptional.get();
-        }
-
-        throw new UsernameNotFoundException("User not found with username: " + username);
-    }
-
     public void verifyCustomerAccess(Long customerId) {
         if (!customerRepository.findByUsername(getCurrentUsername())
                 .orElseThrow(() -> new AccessDeniedException("Customer not authenticated"))
                 .getId()
                 .equals(customerId)) {
-                    throw new AccessDeniedException("Access denied. You can only access your own data.");
+            throw new AccessDeniedException("Access denied. You can only access your own data.");
         }
     }
 
     public void verifyAdminAndLogAction(Long adminId, ActionType actionType) {
         if (!adminRepository.findByUsername(getCurrentUsername())
-            .orElseThrow(() -> new AccessDeniedException("admin not authenticated"))
-            .getId().
-            equals(adminId)) {
-                throw new AccessDeniedException("Access denied");
+                .orElseThrow(() -> new AccessDeniedException("admin not authenticated"))
+                .getId().
+                equals(adminId)) {
+            throw new AccessDeniedException("Access denied");
         }
 
         actionService.logAction(actionType);
-    }
-
-    public String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            return authentication.getName();
-        }
-        throw new AccessDeniedException("User not authenticated");
     }
 
     public Customer updateCustomer(Long customerId, CustomerCommand customerCommand) {
@@ -87,4 +64,26 @@ public class CustomUserDetailsService implements UserDetailsService {
         return customerRepository.save(customer);
     }
 
+    public String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return authentication.getName();
+        }
+        throw new AccessDeniedException("User not authenticated");
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<Customer> customerOptional = customerRepository.findByUsername(username);
+        if (customerOptional.isPresent()) {
+            return customerOptional.get();
+        }
+
+        Optional<Admin> adminOptional = adminRepository.findByUsername(username);
+        if (adminOptional.isPresent()) {
+            return adminOptional.get();
+        }
+
+        throw new UsernameNotFoundException("User not found with username: " + username);
+    }
 }

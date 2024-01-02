@@ -4,15 +4,14 @@ import com.example.carparkingapi.command.CarCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
-import com.example.carparkingapi.exception.*;
+import com.example.carparkingapi.exception.CarNotFoundException;
+import com.example.carparkingapi.exception.CarParkingStatusException;
 import com.example.carparkingapi.model.Fuel;
-import com.example.carparkingapi.model.ParkingType;
 import com.example.carparkingapi.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -27,10 +26,17 @@ public class CarService {
 
     private final ModelMapper modelMapper;
 
-    private final CustomUserDetailsService customUserDetailsService;
+    public Car findById(Long id) {
+        return carRepository.findById(id)
+                .orElseThrow(() -> new CarNotFoundException("Car not found"));
+    }
 
     public Car save(Car car) {
         return carRepository.save(car);
+    }
+
+    public List<Car> saveAll(List<Car> cars) {
+        return carRepository.saveAll(cars);
     }
 
     public Car updateCar(Long carId, CarCommand carCommand) {
@@ -47,26 +53,9 @@ public class CarService {
         return carRepository.save(car);
     }
 
-    public Car findById(Long id) {
-        return carRepository.findById(id)
-                .orElseThrow(() -> new CarNotFoundException("Car not found"));
-    }
-
     public String delete(Long id) {
         carRepository.delete(findById(id));
         return "Car with id " + id + " deleted";
-    }
-
-    public List<CarDTO> findAllCarsByCustomerId(Long id) {
-        return carRepository.findAllByCustomerId(id)
-                .orElseThrow(() -> new CarNotFoundException("No cars found"))
-                .stream()
-                .map(car -> modelMapper.map(car, CarDTO.class))
-                .toList();
-    }
-
-    public List<Car> saveAll(List<Car> cars) {
-        return carRepository.saveAll(cars);
     }
 
     public CarDTO parkCar(Long carId, Long parkingId) {
@@ -78,7 +67,7 @@ public class CarService {
 
         Parking parking = parkingService.findById(parkingId);
 
-        validateParkingSpace(parking, car);
+        parkingService.validateParkingSpace(parking, car);
 
         parking.setTakenPlaces(parking.getTakenPlaces() + 1);
         car.setParking(parking);
@@ -107,19 +96,12 @@ public class CarService {
         return "Car with id " + carId + " left parking with id " + parking.getId();
     }
 
-    private void validateParkingSpace(Parking parking, Car car) {
-        if (parking.getTakenPlaces() >= parking.getCapacity()) {
-            throw new FullParkingException("Parking is already full");
-        }
-        if (car.getLength() > parking.getParkingSpotLength() || car.getWidth() > parking.getParkingSpotWidth()) {
-            throw new ParkingSpaceToSmallException("Parking space is too small for this car");
-        }
-        if (car.getFuel() == Fuel.ELECTRIC && parking.getTakenElectricPlaces() >= parking.getPlacesForElectricCars()) {
-            throw new NoMoreElectricPlacesException("This parking has no more electric places");
-        }
-        if (car.getFuel().equals(Fuel.LPG) && parking.getParkingType().equals(ParkingType.UNDERGROUND)) {
-            throw new LPGNotAllowedException("This parking does not allow LPG cars");
-        }
+    public List<CarDTO> findAllCarsByCustomerId(Long id) {
+        return carRepository.findAllByCustomerId(id)
+                .orElseThrow(() -> new CarNotFoundException("No cars found"))
+                .stream()
+                .map(car -> modelMapper.map(car, CarDTO.class))
+                .toList();
     }
 
     public Car findMostExpensiveCarForCustomer(Long customerId) {
@@ -152,7 +134,4 @@ public class CarService {
                 .max(Comparator.comparing(Car::getPrice))
                 .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
-
-
-
 }
