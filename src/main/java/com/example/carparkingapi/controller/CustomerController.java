@@ -80,10 +80,9 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{customerId}/cars/{carId}/delete")
-    public ResponseEntity<Void> deleteCar(@PathVariable Long customerId, @PathVariable Long carId) {
+    public ResponseEntity<String> deleteCar(@PathVariable Long customerId, @PathVariable Long carId) {
         customUserDetailsService.verifyCustomerAccess(customerId);
-        carService.delete(carId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(carService.delete(carId), HttpStatus.OK);
     }
 
     @PostMapping("/{customerId}/cars/{carId}/park/{parkingId}")
@@ -94,10 +93,9 @@ public class CustomerController {
     }
 
     @PostMapping("/{customerId}/cars/{carId}/leave")
-    public ResponseEntity<Void> leaveParking(@PathVariable Long customerId, @PathVariable Long carId) {
+    public ResponseEntity<String> leaveParking(@PathVariable Long customerId, @PathVariable Long carId) {
         customUserDetailsService.verifyCustomerAccess(customerId);
-        carService.leaveParking(carId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(carService.leaveParking(carId), HttpStatus.OK);
     }
 
     @GetMapping("/{customerId}/cars/most-expensive")

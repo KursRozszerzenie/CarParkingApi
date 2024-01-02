@@ -52,9 +52,10 @@ public class ParkingService {
                 .orElseThrow(() -> new ParkingNotFoundException("Parking not found"));
     }
 
-    public void delete(Long id) {
+    public String delete(Long id) {
         Parking parking = findById(id);
         parkingRepository.delete(parking);
+        return "Parking with id " + id + " deleted";
     }
 
     public List<CarDTO> findAllCarsFromParking(Long id) {

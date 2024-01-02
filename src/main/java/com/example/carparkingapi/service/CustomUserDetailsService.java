@@ -3,6 +3,8 @@ package com.example.carparkingapi.service;
 import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
+import com.example.carparkingapi.model.ActionType;
+import com.example.carparkingapi.model.Role;
 import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import lombok.AllArgsConstructor;
@@ -28,6 +30,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final AdminRepository adminRepository;
 
+    private final ActionService actionService;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Customer> customerOptional = customerRepository.findByUsername(username);
@@ -52,13 +56,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
     }
 
-    public void verifyAdminAccess(Long adminId) {
+    public void verifyAdminAndLogAction(Long adminId, ActionType actionType) {
         if (!adminRepository.findByUsername(getCurrentUsername())
             .orElseThrow(() -> new AccessDeniedException("admin not authenticated"))
             .getId().
             equals(adminId)) {
                 throw new AccessDeniedException("Access denied");
         }
+
+        actionService.logAction(actionType);
     }
 
     public String getCurrentUsername() {

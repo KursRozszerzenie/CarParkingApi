@@ -52,9 +52,9 @@ public class CarService {
                 .orElseThrow(() -> new CarNotFoundException("Car not found"));
     }
 
-    public void delete(Long id) {
-        Car car = findById(id);
-        carRepository.delete(car);
+    public String delete(Long id) {
+        carRepository.delete(findById(id));
+        return "Car with id " + id + " deleted";
     }
 
     public List<CarDTO> findAllCarsByCustomerId(Long id) {
@@ -89,7 +89,7 @@ public class CarService {
         return modelMapper.map(carRepository.save(car), CarDTO.class);
     }
 
-    public void leaveParking(Long carId) {
+    public String leaveParking(Long carId) {
         Car car = findById(carId);
 
         Parking parking = Optional.ofNullable(car.getParking())
@@ -103,6 +103,8 @@ public class CarService {
 
         car.setParking(null);
         carRepository.save(car);
+
+        return "Car with id " + carId + " left parking with id " + parking.getId();
     }
 
     private void validateParkingSpace(Parking parking, Car car) {
