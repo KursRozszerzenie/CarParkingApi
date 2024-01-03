@@ -41,7 +41,7 @@ public class EditService {
                 }
             }
             case "parking" -> {
-                if (!fieldName.equals("name") && !fieldName.equals("address") && !fieldName.equals("capacity")
+                if (!fieldName.equals("name") && !fieldName.equals("adress") && !fieldName.equals("capacity")
                         && !fieldName.equals("parkingType") && !fieldName.equals("parkingSpotWidth")
                         && !fieldName.equals("parkingSpotLength") && !fieldName.equals("placesForElectricCars")) {
                     throw new InvalidFieldNameException("Invalid field name choose from " +
@@ -99,7 +99,7 @@ public class EditService {
 
         return switch (fieldName) {
             case "name" -> parking.getName();
-            case "address" -> parking.getAdress();
+            case "adress" -> parking.getAdress();
             case "capacity" -> String.valueOf(parking.getCapacity());
             case "parkingType" -> String.valueOf(parking.getParkingType());
             case "parkingSpotWidth" -> String.valueOf(parking.getParkingSpotWidth());
