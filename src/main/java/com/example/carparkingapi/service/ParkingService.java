@@ -30,20 +30,6 @@ public class ParkingService {
         return parkingRepository.save(parking);
     }
 
-    public Parking updateParking(Long parkingId, ParkingCommand parkingCommand) {
-        Parking parking = parkingRepository.findById(parkingId)
-                .orElseThrow(() -> new EntityNotFoundException("Parking not found"));
-        parking.setName(parkingCommand.getName());
-        parking.setAdress(parkingCommand.getAdress());
-        parking.setCapacity(parkingCommand.getCapacity());
-        parking.setParkingType(parkingCommand.getParkingType());
-        parking.setParkingSpotWidth(parkingCommand.getParkingSpotWidth());
-        parking.setParkingSpotLength(parkingCommand.getParkingSpotLength());
-        parking.setPlacesForElectricCars(parkingCommand.getPlacesForElectricCars());
-
-        return parkingRepository.save(parking);
-    }
-
     public String delete(Long id) {
         Parking parking = findById(id);
         parkingRepository.delete(parking);

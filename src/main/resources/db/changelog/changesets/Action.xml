@@ -3,7 +3,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="648751" author="Kuba">
+    <changeSet id="3142536" author="Kuba">
         <createTable tableName="action">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -23,6 +23,13 @@
             <column name="last_modified_date" type="date">
                 <constraints nullable="false"/>
             </column>
+            <column name="dtype" type="varchar(255)">
+            </column>
+            <column name="entity_id" type="bigint"/>
+            <column name="entity_type" type="varchar(255)"/>
+            <column name="field_name" type="varchar(255)"/>
+            <column name="old_value" type="varchar(255)"/>
+            <column name="new_value" type="varchar(255)"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

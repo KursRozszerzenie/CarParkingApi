@@ -1,6 +1,7 @@
 package com.example.carparkingapi.service;
 
 import com.example.carparkingapi.command.CarCommand;
+import com.example.carparkingapi.command.EditCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
@@ -40,20 +41,6 @@ public class CarService {
 
     public List<Car> saveAll(List<Car> cars) {
        return carRepository.saveAll(cars);
-    }
-
-    public Car updateCar(Long carId, CarCommand carCommand) {
-       Car car = carRepository.findById(carId)
-                .orElseThrow(() -> new CarNotFoundException("Car not found"));
-        car.setBrand(carCommand.getBrand());
-        car.setModel(carCommand.getModel());
-        car.setFuel(carCommand.getFuel());
-        car.setLength(carCommand.getLength());
-        car.setWidth(carCommand.getWidth());
-        car.setPrice(carCommand.getPrice());
-        car.setDateOfProduction(carCommand.getDateOfProduction());
-
-        return carRepository.save(car);
     }
 
     public String delete(Long id) {

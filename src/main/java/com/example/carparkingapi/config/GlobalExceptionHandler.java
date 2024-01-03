@@ -45,6 +45,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(value = {InvalidFieldNameException.class})
+    protected ResponseEntity<ApiError> handleInvalidFieldNameException(RuntimeException runtimeException) {
+        return new ResponseEntity<>(new ApiError(HttpStatus.BAD_REQUEST, runtimeException.getMessage()),
+                HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(value = ConstraintViolationException.class)
     protected ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException e) {

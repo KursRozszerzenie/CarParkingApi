@@ -1,8 +1,8 @@
 package com.example.carparkingapi.controller;
 
+import com.example.carparkingapi.command.EditCommand;
 import com.example.carparkingapi.command.AdminCommand;
 import com.example.carparkingapi.command.CarCommand;
-import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.command.ParkingCommand;
 import com.example.carparkingapi.config.security.authentication.AuthenticationResponse;
 import com.example.carparkingapi.config.security.authentication.AuthenticationService;
@@ -42,10 +42,30 @@ public class AdminController {
     @PutMapping("{adminId}/customers/update/{customerId}")
     public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long adminId,
                                                       @PathVariable Long customerId,
-                                                      @RequestBody @Valid CustomerCommand customerCommand) {
-        adminService.verifyAndLog(adminId, ActionType.UPDATE_CUSTOMER);
+                                                      @RequestBody EditCommand editCommand) {
+        adminService.verifyAndLog(adminId, ActionType.UPDATE_CUSTOMER, customerId, "customer",
+                editCommand.getFieldName(), editCommand.getNewValue());
         return new ResponseEntity<>(modelMapper.map(adminService
-                .updateCustomer(customerId, customerCommand), CustomerDTO.class), HttpStatus.OK);
+                .updateCustomer(customerId, editCommand), CustomerDTO.class), HttpStatus.OK);
+    }
+
+    @PutMapping("{adminId}/cars/update/{carId}")
+    public ResponseEntity<CarDTO> updateCar(@PathVariable Long adminId,
+                                            @PathVariable Long carId,
+                                            @RequestBody EditCommand editCommand) {
+        adminService.verifyAndLog(adminId, ActionType.UPDATING_CAR, carId, "car",
+                editCommand.getFieldName(), editCommand.getNewValue());
+        return new ResponseEntity<>(modelMapper.map(adminService
+                .updateCar(carId, editCommand), CarDTO.class), HttpStatus.OK);
+    }
+
+    @PutMapping("{adminId}/parking/update/{parkingId}")
+    public ResponseEntity<ParkingDTO> updateParking(@PathVariable Long adminId, @PathVariable Long parkingId,
+                                                    @RequestBody @Valid EditCommand editCommand) {
+        adminService.verifyAndLog(adminId, ActionType.UPDATING_PARKING, parkingId, "parking",
+                editCommand.getFieldName(), editCommand.getNewValue());
+        return new ResponseEntity<>(modelMapper.map(adminService
+                .updateParking(parkingId, editCommand), ParkingDTO.class), HttpStatus.OK);
     }
 
     @PutMapping("{adminId}/customers/enable-account/{customerId}")
@@ -78,15 +98,6 @@ public class AdminController {
         adminService.verifyAndLog(adminId, ActionType.UNLOCK_CUSTOMER_ACCOUNT);
         return new ResponseEntity<>(modelMapper.map(adminService
                 .unlockCustomerAccount(customerId), CustomerDTO.class), HttpStatus.OK);
-    }
-
-    @PutMapping("{adminId}/cars/update/{carId}")
-    public ResponseEntity<CarDTO> updateCar(@PathVariable Long adminId,
-                                            @PathVariable Long carId,
-                                            @RequestBody @Valid CarCommand carCommand) {
-        adminService.verifyAndLog(adminId, ActionType.UPDATING_CAR);
-        return new ResponseEntity<>(modelMapper.map(carService
-                .updateCar(carId, carCommand), CarDTO.class), HttpStatus.OK);
     }
 
     @PostMapping("{adminId}/cars/add")
@@ -122,14 +133,6 @@ public class AdminController {
     public ResponseEntity<CarDTO> getMostExpensiveCar(@PathVariable Long adminId) {
         adminService.verifyAndLog(adminId, ActionType.RETRIEVING_MOST_EXPENSIVE_CAR);
         return new ResponseEntity<>(modelMapper.map(carService.findMostExpensiveCar(), CarDTO.class), HttpStatus.OK);
-    }
-
-    @PutMapping("{adminId}/parking/update/{parkingId}")
-    public ResponseEntity<ParkingDTO> updateParking(@PathVariable Long adminId, @PathVariable Long parkingId,
-                                                    @RequestBody @Valid ParkingCommand parkingCommand) {
-        adminService.verifyAndLog(adminId, ActionType.UPDATING_PARKING);
-        return new ResponseEntity<>(modelMapper.map(parkingService.updateParking(parkingId, parkingCommand),
-                ParkingDTO.class), HttpStatus.OK);
     }
 
     @PostMapping("{adminId}/parking/save")
