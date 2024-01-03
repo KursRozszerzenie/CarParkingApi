@@ -23,8 +23,6 @@
             <column name="last_modified_date" type="date">
                 <constraints nullable="false"/>
             </column>
-            <column name="dtype" type="varchar(255)">
-            </column>
             <column name="entity_id" type="bigint"/>
             <column name="entity_type" type="varchar(255)"/>
             <column name="field_name" type="varchar(255)"/>
