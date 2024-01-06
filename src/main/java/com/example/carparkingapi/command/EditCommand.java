@@ -8,5 +8,4 @@ public class EditCommand {
     String fieldName;
 
     String newValue;
-
 }

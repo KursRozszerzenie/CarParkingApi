@@ -24,7 +24,6 @@ public class JwtService {
     @Value(value = "${jwtSigningKey}")
     private String jwtSigningKey;
 
-
     protected String extractUserLogin(String jsonWebToken) {
         return extractClaim(jsonWebToken, Claims::getSubject);
     }

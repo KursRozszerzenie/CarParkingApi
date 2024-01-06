@@ -1,4 +1,4 @@
-package com.example.carparkingapi.exception;
+package com.example.carparkingapi.exception.parking.action;
 
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;

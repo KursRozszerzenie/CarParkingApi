@@ -5,8 +5,8 @@ import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.config.security.jwt.JwtService;
 import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
-import com.example.carparkingapi.exception.AdminNotFoundException;
-import com.example.carparkingapi.exception.CustomerNotFoundException;
+import com.example.carparkingapi.exception.not.found.AdminNotFoundException;
+import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.model.AuthenticationRequest;
 import com.example.carparkingapi.model.AuthenticationResponse;
 import com.example.carparkingapi.model.Role;
@@ -46,14 +46,11 @@ public class AuthenticationService {
 
         customerRepository.save(customer);
 
-        return AuthenticationResponse
-                .builder()
-                .token(jwtService.generateToken(customer))
-                .build();
+        return new AuthenticationResponse(jwtService.generateToken(customer));
     }
 
     public AuthenticationResponse authenticateCustomer(AuthenticationRequest request) {
-        Customer customer = customerRepository.findByUsername(request.getUsername())
+        Customer customer = customerRepository.findCustomerByUsername(request.getUsername())
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         authenticationManager.authenticate(
@@ -63,10 +60,7 @@ public class AuthenticationService {
                 )
         );
 
-        return AuthenticationResponse
-                .builder()
-                .token(jwtService.generateToken(customer))
-                .build();
+        return new AuthenticationResponse(jwtService.generateToken(customer));
     }
 
     public AuthenticationResponse registerAdmin(AdminCommand request) {
@@ -76,15 +70,12 @@ public class AuthenticationService {
 
         adminRepository.save(admin);
 
-        return AuthenticationResponse
-                .builder()
-                .token(jwtService.generateToken(admin))
-                .build();
+        return new AuthenticationResponse(jwtService.generateToken(admin));
     }
 
 
     public AuthenticationResponse authenticateAdmin(AdminCommand request) {
-        Admin admin = adminRepository.findByUsername(request.getUsername())
+        Admin admin = adminRepository.findAdminByUsername(request.getUsername())
                 .orElseThrow(() -> new AdminNotFoundException("Admin not found"));
 
         authenticationManager.authenticate(
@@ -94,9 +85,6 @@ public class AuthenticationService {
                 )
         );
 
-        return AuthenticationResponse
-                .builder()
-                .token(jwtService.generateToken(admin))
-                .build();
+        return new AuthenticationResponse(jwtService.generateToken(admin));
     }
 }

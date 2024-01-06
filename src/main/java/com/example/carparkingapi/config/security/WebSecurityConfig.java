@@ -2,6 +2,7 @@ package com.example.carparkingapi.config.security;
 
 import com.example.carparkingapi.config.CustomAccessDeniedHandler;
 import com.example.carparkingapi.config.security.jwt.JwtAuthenticationFilter;
+import com.example.carparkingapi.exception.security.FilterChainFailException;
 import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.service.CustomUserDetailsService;
@@ -81,23 +82,21 @@ public class WebSecurityConfig {
                                 .antMatchers(HttpMethod.DELETE, ADMIN_URL).hasAuthority(ADMIN)
                                 .antMatchers(HttpMethod.POST, AUTH_URL).permitAll()
                                 .anyRequest()
-                        .authenticated()
-                        .and()
-                        .sessionManagement()
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                        .and()
-                        .authenticationProvider(authenticationProvider())
-                        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                        .exceptionHandling()
-                        .authenticationEntryPoint(entryPoint)
-                        .accessDeniedHandler(accessDeniedHandler());
+                                .authenticated()
+                                .and()
+                                .sessionManagement()
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                                .and()
+                                .authenticationProvider(authenticationProvider())
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                                .exceptionHandling()
+                                .authenticationEntryPoint(entryPoint)
+                                .accessDeniedHandler(accessDeniedHandler());
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new FilterChainFailException(e.getMessage());
                     }
                 });
 
         return http.build();
     }
-
 }
-

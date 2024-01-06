@@ -26,8 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-//    W niektorych miejscach moze dodac logowanie za pomoca Logger @Log4j2
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @NotNull HttpServletResponse response,
@@ -37,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
 
         final String authenticationHeader = request.getHeader("Authorization");
 
@@ -49,10 +46,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jsonWebToken = authenticationHeader.substring(7);
         try {
             String userLogin = jwtService.extractUserLogin(jsonWebToken);
-            if (Objects.nonNull(userLogin) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                if (jwtService.isTokenValid(jsonWebToken, getUserDetails(jsonWebToken))) {
+            if (Objects.nonNull(userLogin) && SecurityContextHolder.getContext().getAuthentication() == null && (jwtService.isTokenValid(jsonWebToken, getUserDetails(jsonWebToken)))) {
                     setAuthenticationContext(jsonWebToken, request);
-                }
+
             }
         } catch (ExpiredJwtException e) {
             request.setAttribute("expired", e.getMessage());
@@ -60,27 +56,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Invalid JWT token");
-//            Logger.error(e.getMessage, e);
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-
-    private void setAuthenticationContext(String jsonWebToken, HttpServletRequest request) {
-        UserDetails userDetails = getUserDetails(jsonWebToken);
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-    }
-
     private UserDetails getUserDetails(String jsonWebToken) {
         Claims claims = jwtService.extractAllClaims(jsonWebToken);
         String username = jwtService.extractUserLogin(jsonWebToken);
         String roleString = claims.get("role", String.class);
-        Role role = null;
+        Role role;
         if (roleString != null) {
             roleString = roleString.replace("Role.", "");
             role = Role.valueOf(roleString);
@@ -93,5 +79,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         userDetails.setRole(role);
 
         return userDetails;
+    }
+
+    private void setAuthenticationContext(String jsonWebToken, HttpServletRequest request) {
+        UserDetails userDetails = getUserDetails(jsonWebToken);
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 }

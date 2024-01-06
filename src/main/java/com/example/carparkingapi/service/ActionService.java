@@ -23,18 +23,17 @@ public class ActionService {
     }
 
     @Transactional
-//    zmiana nazwy na saveAction/prepareAction
     public void saveAction(ActionType actionType, Long entityId, String entityType,
-                          String fieldName, String oldValue, String newValue) {
+                           String fieldName, String oldValue, String newValue) {
 
-            EditAction editAction = new EditAction();
-            editAction.setActionType(actionType);
-            editAction.setEntityId(entityId);
-            editAction.setEntityType(entityType);
-            editAction.setFieldName(fieldName);
-            editAction.setOldValue(oldValue);
-            editAction.setNewValue(newValue);
-            actionRepository.save(editAction);
+        EditAction editAction = new EditAction();
+        editAction.setActionType(actionType);
+        editAction.setEntityId(entityId);
+        editAction.setEntityType(entityType);
+        editAction.setFieldName(fieldName);
+        editAction.setOldValue(oldValue);
+        editAction.setNewValue(newValue);
+        actionRepository.save(editAction);
 
     }
 }

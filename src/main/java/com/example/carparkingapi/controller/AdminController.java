@@ -8,9 +8,10 @@ import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.dto.CustomerDTO;
 import com.example.carparkingapi.dto.ParkingDTO;
+import com.example.carparkingapi.exception.not.found.CarNotFoundException;
 import com.example.carparkingapi.model.ActionType;
+import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.service.AdminService;
-import com.example.carparkingapi.service.AuthenticationService;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.ParkingService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+import static com.example.carparkingapi.util.Constants.*;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -29,9 +32,9 @@ public class AdminController {
 
     private final CarService carService;
 
-    private final AuthenticationService authService;
-
     private final AdminService adminService;
+
+    private final CarRepository carRepository;
 
     private final ModelMapper modelMapper;
 
@@ -40,7 +43,7 @@ public class AdminController {
     @PutMapping("/customers/update/{customerId}")
     public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long customerId,
                                                       @RequestBody EditCommand editCommand) {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.UPDATE_CUSTOMER, customerId, "customer",
+        adminService.verifyAdminAccessAndSaveAction(ActionType.UPDATE_CUSTOMER, customerId, CUSTOMER,
                 editCommand.getFieldName(), editCommand.getNewValue());
         return new ResponseEntity<>(modelMapper.map(adminService
                 .updateCustomer(customerId, editCommand), CustomerDTO.class), HttpStatus.OK);
@@ -49,7 +52,7 @@ public class AdminController {
     @PutMapping("/cars/update/{carId}")
     public ResponseEntity<CarDTO> updateCar(@PathVariable Long carId,
                                             @RequestBody EditCommand editCommand) {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.UPDATING_CAR, carId, "car",
+        adminService.verifyAdminAccessAndSaveAction(ActionType.UPDATING_CAR, carId, CAR,
                 editCommand.getFieldName(), editCommand.getNewValue());
         return new ResponseEntity<>(modelMapper.map(adminService
                 .updateCar(carId, editCommand), CarDTO.class), HttpStatus.OK);
@@ -58,7 +61,7 @@ public class AdminController {
     @PutMapping("/parking/update/{parkingId}")
     public ResponseEntity<ParkingDTO> updateParking(@PathVariable Long parkingId,
                                                     @RequestBody @Valid EditCommand editCommand) {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.UPDATING_PARKING, parkingId, "parking",
+        adminService.verifyAdminAccessAndSaveAction(ActionType.UPDATING_PARKING, parkingId, PARKING,
                 editCommand.getFieldName(), editCommand.getNewValue());
         return new ResponseEntity<>(modelMapper.map(adminService
                 .updateParking(parkingId, editCommand), ParkingDTO.class), HttpStatus.OK);
@@ -96,13 +99,13 @@ public class AdminController {
     public ResponseEntity<CarDTO> addCar(@RequestBody @Valid CarCommand carCommand) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.ADDING_CAR);
         return new ResponseEntity<>(modelMapper
-                .map(carService.save(modelMapper.map(carCommand, Car.class)), CarDTO.class), HttpStatus.CREATED);
+                .map(carRepository.save(modelMapper.map(carCommand, Car.class)), CarDTO.class), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/cars/{carId}/delete")
     public ResponseEntity<Void> deleteCar(@PathVariable Long carId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.DELETING_CAR);
-        carService.delete(carId);
+        carRepository.delete(carRepository.findById(carId).orElseThrow(CarNotFoundException::new));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -114,7 +117,7 @@ public class AdminController {
     }
 
     @PostMapping("/cars/{carId}/leave")
-    public ResponseEntity<String> leaveParking( @PathVariable Long carId) {
+    public ResponseEntity<String> leaveParking(@PathVariable Long carId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.LEAVING_PARKING);
         return new ResponseEntity<>(carService.leaveParking(carId), HttpStatus.OK);
     }
@@ -130,7 +133,7 @@ public class AdminController {
         adminService.verifyAdminAccessAndSaveAction(ActionType.ADDING_PARKING);
         return new ResponseEntity<>(modelMapper
                 .map(parkingService
-                .save(modelMapper.map(parkingCommand, Parking.class)), ParkingDTO.class), HttpStatus.CREATED);
+                        .save(modelMapper.map(parkingCommand, Parking.class)), ParkingDTO.class), HttpStatus.CREATED);
     }
 
     @GetMapping("/parking/all")

@@ -3,6 +3,8 @@ package com.example.carparkingapi.controller;
 import com.example.carparkingapi.command.CarCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.dto.CarDTO;
+import com.example.carparkingapi.exception.not.found.CarNotFoundException;
+import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
@@ -12,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,9 +26,9 @@ public class CustomerController {
 
     private final CarService carService;
 
-    private final CustomerRepository customerRepository;
-
     private final CarRepository carRepository;
+
+    private final CustomerRepository customerRepository;
 
     private final ModelMapper modelMapper;
 
@@ -41,11 +42,10 @@ public class CustomerController {
 
     @PostMapping("/save")
     public ResponseEntity<CarDTO> addCarToCustomer(@RequestBody @Valid CarCommand carCommand) {
-
         customUserDetailsService.verifyCustomerAccess();
         Car car = modelMapper.map(carCommand, Car.class);
-        car.setCustomer(customerRepository.findByUsername(customUserDetailsService.getCurrentUsername()).orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
-        return new ResponseEntity<>(modelMapper.map(carService.save(car), CarDTO.class), HttpStatus.CREATED);
+        car.setCustomer(customerRepository.findCustomerByUsername(customUserDetailsService.getCurrentUsername()).orElseThrow(CustomerNotFoundException::new));
+        return new ResponseEntity<>(modelMapper.map(carRepository.save(car), CarDTO.class), HttpStatus.CREATED);
     }
 
     @PostMapping("/save/batch")
@@ -54,19 +54,17 @@ public class CustomerController {
         customUserDetailsService.verifyCustomerAccess();
         List<Car> cars = carCommands.stream().map(command -> {
             Car car = modelMapper.map(command, Car.class);
-            car.setCustomer(customerRepository.findByUsername(customUserDetailsService.getCurrentUsername()).orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
+            car.setCustomer(customerRepository.findCustomerByUsername(customUserDetailsService.getCurrentUsername()).orElseThrow(CustomerNotFoundException::new));
             return car;
         }).toList();
 
-        return new ResponseEntity<>(carService.saveAll(cars).stream().map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.CREATED);
+        return new ResponseEntity<>(carRepository.saveAll(cars).stream().map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.CREATED);
     }
-
-    //// metoda do updateowania samochodu
 
     @DeleteMapping("/cars/{carId}/delete")
     public ResponseEntity<Void> deleteCar(@PathVariable Long carId) {
         customUserDetailsService.verifyCustomerAccess();
-        carService.delete(carId);
+        carRepository.delete(carRepository.findById(carId).orElseThrow(CarNotFoundException::new));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

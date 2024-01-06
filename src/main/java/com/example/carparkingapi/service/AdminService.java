@@ -4,10 +4,11 @@ import com.example.carparkingapi.command.EditCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.domain.Parking;
-import com.example.carparkingapi.exception.CarNotFoundException;
-import com.example.carparkingapi.exception.CustomerNotFoundException;
-import com.example.carparkingapi.exception.InvalidCredentialsException;
-import com.example.carparkingapi.exception.InvalidFieldNameException;
+import com.example.carparkingapi.exception.not.found.CarNotFoundException;
+import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
+import com.example.carparkingapi.exception.not.found.ParkingNotFoundException;
+import com.example.carparkingapi.exception.security.InvalidCredentialsException;
+import com.example.carparkingapi.exception.other.InvalidFieldNameException;
 import com.example.carparkingapi.model.ActionType;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.model.ParkingType;
@@ -18,8 +19,9 @@ import com.example.carparkingapi.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
+
+import static com.example.carparkingapi.util.Constants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,16 +42,16 @@ public class AdminService {
     private final ParkingRepository parkingRepository;
 
     public void verifyAdminAccessAndSaveAction(ActionType actionType) {
-        adminRepository.findByUsername(customUserDetailsService.getCurrentUsername())
-                .orElseThrow(() -> new InvalidCredentialsException("Admin not authenticated"));
+        adminRepository.findAdminByUsername(customUserDetailsService.getCurrentUsername())
+                .orElseThrow(() -> new InvalidCredentialsException(ADMIN_NOT_AUTHORIZED_ERROR_MESSAGE));
 
-         actionService.saveAction(actionType);
+        actionService.saveAction(actionType);
     }
 
     public void verifyAdminAccessAndSaveAction(ActionType actionType, Long entityId, String entityType,
                                                String fieldName, String newValue) {
-        adminRepository.findByUsername(customUserDetailsService.getCurrentUsername())
-                .orElseThrow(() -> new InvalidCredentialsException("Admin not authenticated"));
+        adminRepository.findAdminByUsername(customUserDetailsService.getCurrentUsername())
+                .orElseThrow(() -> new InvalidCredentialsException(ADMIN_NOT_AUTHORIZED_ERROR_MESSAGE));
 
         editService.verifyFieldName(fieldName, entityType);
         actionService.saveAction(actionType, entityId, entityType, fieldName,
@@ -61,12 +63,11 @@ public class AdminService {
                 .orElseThrow(CustomerNotFoundException::new);
 
         switch (customerEdit.getFieldName()) {
-            case "username" -> customer.setUsername(customerEdit.getNewValue());
-            case "password" -> customer.setPassword(customerEdit.getNewValue());
-            case "firstName" -> customer.setFirstName(customerEdit.getNewValue());
-            case "lastName" -> customer.setLastName(customerEdit.getNewValue());
-            default -> throw new InvalidFieldNameException("Invalid field name choose from " +
-                    "username, password, firstName, lastName");
+            case USERNAME -> customer.setUsername(customerEdit.getNewValue());
+            case PASSWORD -> customer.setPassword(customerEdit.getNewValue());
+            case FIRST_NAME -> customer.setFirstName(customerEdit.getNewValue());
+            case LAST_NAME -> customer.setLastName(customerEdit.getNewValue());
+            default -> throw new InvalidFieldNameException(CUSTOMER_FIELD_ERROR_MESSAGE);
         }
 
         return customerRepository.save(customer);
@@ -77,15 +78,14 @@ public class AdminService {
                 .orElseThrow(CarNotFoundException::new);
 
         switch (editCommand.getFieldName()) {
-            case "brand" -> car.setBrand(editCommand.getNewValue());
-            case "model" -> car.setModel(editCommand.getNewValue());
-            case "price" -> car.setPrice(Double.parseDouble(editCommand.getNewValue()));
-            case "length" -> car.setLength(Integer.parseInt(editCommand.getNewValue()));
-            case "width" -> car.setWidth(Integer.parseInt(editCommand.getNewValue()));
-            case "dateOfProduction" -> car.setDateOfProduction(LocalDate.parse(editCommand.getNewValue()));
-            case "fuel" -> car.setFuel(Fuel.valueOf(editCommand.getNewValue()));
-            default -> throw new InvalidFieldNameException("Invalid field name choose from " +
-                    "brand, model, color, fuel, year, price, parking");
+            case BRAND -> car.setBrand(editCommand.getNewValue());
+            case MODEL -> car.setModel(editCommand.getNewValue());
+            case PRICE -> car.setPrice(Double.parseDouble(editCommand.getNewValue()));
+            case LENGTH -> car.setLength(Integer.parseInt(editCommand.getNewValue()));
+            case WIDTH -> car.setWidth(Integer.parseInt(editCommand.getNewValue()));
+            case DATE_OF_PRODUCTION -> car.setDateOfProduction(LocalDate.parse(editCommand.getNewValue()));
+            case FUEL -> car.setFuel(Fuel.valueOf(editCommand.getNewValue()));
+            default -> throw new InvalidFieldNameException(CAR_FIELD_ERROR_MESSAGE);
         }
 
         return carRepository.save(car);
@@ -93,18 +93,18 @@ public class AdminService {
 
     public Parking updateParking(Long parkingId, EditCommand editCommand) {
         Parking parking = parkingRepository.findById(parkingId)
-                .orElseThrow(() -> new EntityNotFoundException("Parking not found"));
+                .orElseThrow(ParkingNotFoundException::new);
 
         switch (editCommand.getFieldName()) {
-            case "name" -> parking.setName(editCommand.getNewValue());
-            case "address" -> parking.setAdress(editCommand.getNewValue());
-            case "parkingType" -> parking.setParkingType(ParkingType.valueOf(editCommand.getNewValue()));
-            case "capacity" -> parking.setCapacity(Integer.parseInt(editCommand.getNewValue()));
-            case "parkingSpotWidth" -> parking.setParkingSpotWidth(Integer.parseInt(editCommand.getNewValue()));
-            case "parkingSpotLength" -> parking.setParkingSpotLength(Integer.parseInt(editCommand.getNewValue()));
-            case "placesForElectricCars" -> parking.setPlacesForElectricCars(Integer.parseInt(editCommand.getNewValue()));
-            default -> throw new InvalidFieldNameException("Invalid field name choose from " +
-                    "name, address, parkingType, numberOfPlaces, numberOfElectricPlaces");
+            case PARKING_NAME -> parking.setName(editCommand.getNewValue());
+            case ADRESS -> parking.setAdress(editCommand.getNewValue());
+            case PARKING_TYPE -> parking.setParkingType(ParkingType.valueOf(editCommand.getNewValue()));
+            case CAPACITY -> parking.setCapacity(Integer.parseInt(editCommand.getNewValue()));
+            case PARKING_SPOT_WIDTH -> parking.setParkingSpotWidth(Integer.parseInt(editCommand.getNewValue()));
+            case PARKING_SPOT_LENGTH -> parking.setParkingSpotLength(Integer.parseInt(editCommand.getNewValue()));
+            case PLACES_FOR_ELECTRIC_CARS ->
+                    parking.setPlacesForElectricCars(Integer.parseInt(editCommand.getNewValue()));
+            default -> throw new InvalidFieldNameException(PARKING_FIELD_ERROR_MESSAGE);
         }
 
         return parkingRepository.save(parking);

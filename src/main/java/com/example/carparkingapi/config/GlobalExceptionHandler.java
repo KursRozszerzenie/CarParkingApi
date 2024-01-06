@@ -1,6 +1,10 @@
 package com.example.carparkingapi.config;
 
-import com.example.carparkingapi.exception.*;
+import com.example.carparkingapi.exception.not.found.*;
+import com.example.carparkingapi.exception.other.InvalidFieldNameException;
+import com.example.carparkingapi.exception.parking.action.*;
+import com.example.carparkingapi.exception.security.InvalidCredentialsException;
+import com.example.carparkingapi.exception.security.UserNotAuthenticatedException;
 import com.example.carparkingapi.model.ApiError;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +29,8 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {CarNotFoundException.class, ParkingNotFoundException.class, UsernameNotFoundException.class,
-            CustomerNotFoundException.class})
+            CustomerNotFoundException.class, AdminNotFoundException.class, NoCarsFoundException.class,
+            UserNotFoundException.class})
     protected ResponseEntity<ApiError> handleNotFoundException(RuntimeException runtimeException) {
         return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, runtimeException.getMessage()),
                 HttpStatus.NOT_FOUND);

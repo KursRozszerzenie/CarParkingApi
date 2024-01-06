@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiError {
+    
     private HttpStatus httpStatus;
     private Object errors;
 }

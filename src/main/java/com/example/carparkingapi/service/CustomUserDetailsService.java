@@ -2,8 +2,9 @@ package com.example.carparkingapi.service;
 
 import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
-import com.example.carparkingapi.exception.InvalidCredentialsException;
-import com.example.carparkingapi.exception.UserNotAuthenticatedException;
+import com.example.carparkingapi.exception.not.found.UserNotFoundException;
+import com.example.carparkingapi.exception.security.InvalidCredentialsException;
+import com.example.carparkingapi.exception.security.UserNotAuthenticatedException;
 import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+
+import static com.example.carparkingapi.util.Constants.CUSTOMER_NOT_AUTHORIZED_ERROR_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -26,24 +28,24 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final AdminRepository adminRepository;
 
+    public void verifyCustomerAccess() {
+        verifyCustomerAccount(customerRepository.findCustomerByUsername(getCurrentUsername())
+                .orElseThrow(() -> new AccessDeniedException(CUSTOMER_NOT_AUTHORIZED_ERROR_MESSAGE)));
+    }
+
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Customer> customerOptional = customerRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String username) {
+        Optional<Customer> customerOptional = customerRepository.findCustomerByUsername(username);
         if (customerOptional.isPresent()) {
             return customerOptional.get();
         }
 
-        Optional<Admin> adminOptional = adminRepository.findByUsername(username);
+        Optional<Admin> adminOptional = adminRepository.findAdminByUsername(username);
         if (adminOptional.isPresent()) {
             return adminOptional.get();
         }
 
-        throw new UsernameNotFoundException("User not found with username: " + username);
-    }
-
-    public void verifyCustomerAccess() {
-        verifyCustomerAccount(customerRepository.findByUsername(getCurrentUsername())
-                .orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
+        throw new UserNotFoundException();
     }
 
     private void verifyCustomerAccount(Customer customer) {
@@ -68,5 +70,4 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         throw new UserNotAuthenticatedException("User not authenticated");
     }
-
 }
