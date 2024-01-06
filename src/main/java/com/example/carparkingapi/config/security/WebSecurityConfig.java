@@ -1,15 +1,14 @@
 package com.example.carparkingapi.config.security;
 
 import com.example.carparkingapi.config.CustomAccessDeniedHandler;
-import com.example.carparkingapi.config.security.authentication.CustomAuthenticationEntryPoint;
 import com.example.carparkingapi.config.security.jwt.JwtAuthenticationFilter;
 import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
-import com.example.carparkingapi.service.ActionService;
 import com.example.carparkingapi.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -21,6 +20,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static com.example.carparkingapi.util.Constants.*;
 
 @EnableWebSecurity
 @Configuration
@@ -34,8 +35,6 @@ public class WebSecurityConfig {
     private final AdminRepository adminRepository;
 
     private final CustomAuthenticationEntryPoint entryPoint;
-
-    private final ActionService actionService;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -69,23 +68,33 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .authorizeHttpRequests()
-                .requestMatchers(
-                        request -> request.getServletPath().startsWith("/api/v1/customer/register"),
-                        request -> request.getServletPath().startsWith("/api/v1/customer/authenticate"),
-                        request -> request.getServletPath().startsWith("/api/v1/admin/authenticate")
-                ).permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling()
-                .authenticationEntryPoint(entryPoint)
-                .accessDeniedHandler(accessDeniedHandler());
+                .authorizeHttpRequests(auth -> {
+                    try {
+                        auth
+                                .antMatchers(HttpMethod.GET, CUSTOMER_URL).hasAuthority(USER)
+                                .antMatchers(HttpMethod.POST, CUSTOMER_URL).hasAuthority(USER)
+                                .antMatchers(HttpMethod.PUT, CUSTOMER_URL).hasAuthority(USER)
+                                .antMatchers(HttpMethod.DELETE, CUSTOMER_URL).hasAuthority(USER)
+                                .antMatchers(HttpMethod.GET, ADMIN_URL).hasAuthority(ADMIN)
+                                .antMatchers(HttpMethod.POST, ADMIN_URL).hasAuthority(ADMIN)
+                                .antMatchers(HttpMethod.PUT, ADMIN_URL).hasAuthority(ADMIN)
+                                .antMatchers(HttpMethod.DELETE, ADMIN_URL).hasAuthority(ADMIN)
+                                .antMatchers(HttpMethod.POST, AUTH_URL).permitAll()
+                                .anyRequest()
+                        .authenticated()
+                        .and()
+                        .sessionManagement()
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .and()
+                        .authenticationProvider(authenticationProvider())
+                        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                        .exceptionHandling()
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(accessDeniedHandler());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 
         return http.build();
     }

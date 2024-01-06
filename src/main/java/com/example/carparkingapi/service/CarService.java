@@ -1,7 +1,5 @@
 package com.example.carparkingapi.service;
 
-import com.example.carparkingapi.command.CarCommand;
-import com.example.carparkingapi.command.EditCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
@@ -14,9 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +25,8 @@ public class CarService {
     private final ParkingService parkingService;
 
     private final ModelMapper modelMapper;
+
+    private final CustomUserDetailsService customUserDetailsService;
 
     public Car findById(Long id) {
         return carRepository.findById(id)
@@ -43,15 +41,14 @@ public class CarService {
        return carRepository.saveAll(cars);
     }
 
-    public String delete(Long id) {
-       carRepository.delete(findById(id));
-        return "Car with id " + id + " deleted";
+    public void delete(Long id) {
+        carRepository.delete(carRepository.findById(id).orElseThrow(CarNotFoundException::new));
     }
 
     public CarDTO parkCar(Long carId, Long parkingId) {
         Car car = findById(carId);
 
-        if (car.getParking() != null) {
+        if (Objects.nonNull(car.getParking())) {
             throw new CarParkingStatusException("Car is already parked");
         }
 
@@ -61,7 +58,7 @@ public class CarService {
 
         parking.setTakenPlaces(parking.getTakenPlaces() + 1);
         car.setParking(parking);
-        if (car.getFuel() == Fuel.ELECTRIC) {
+        if (Objects.equals(Fuel.ELECTRIC, car.getFuel())) {
             parking.setTakenElectricPlaces(parking.getTakenElectricPlaces() + 1);
         }
 
@@ -76,7 +73,7 @@ public class CarService {
 
         parking.setTakenPlaces(parking.getTakenPlaces() - 1);
 
-        if (car.getFuel() == Fuel.ELECTRIC) {
+        if (Objects.equals(Fuel.ELECTRIC, car.getFuel())) {
             parking.setTakenElectricPlaces(parking.getTakenElectricPlaces() - 1);
         }
 
@@ -86,54 +83,73 @@ public class CarService {
         return "Car with id " + carId + " left parking with id " + parking.getId();
     }
 
-    public List<CarDTO> findAllCarsByCustomerId(Long id) {
-        return carRepository.findAllByCustomerId(id)
-                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(id, null)))
+    public List<CarDTO> findAllCarsByCustomer() {
+        return Optional.ofNullable(carRepository
+                        .findAllByCustomerUsername(customUserDetailsService.getCurrentUsername()))
+                .orElseGet(Collections::emptyList)
                 .stream()
+                .filter(Objects::nonNull)
                 .map(car -> modelMapper.map(car, CarDTO.class))
                 .toList();
     }
 
-    public Car findMostExpensiveCarForCustomer(Long customerId) {
-        return carRepository.findByCustomerId(customerId).stream()
-                .max(Comparator.comparing(Car::getPrice))
-                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(customerId, null)));
-    }
-
-    public Car findMostExpensiveCarByBrand(Long customerId, String brand) {
-        return carRepository.findAllByCustomerIdAndBrand(customerId, brand)
-                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(customerId, brand)))
+    public Car findMostExpensiveCarForCustomer() {
+        return Optional.ofNullable(carRepository.findAllByCustomerUsername(customUserDetailsService.getCurrentUsername()))
+                .orElseGet(Collections::emptyList)
                 .stream()
-                .max(Comparator.comparing(Car::getPrice))
-                .orElseThrow(() -> new CarNotFoundException(carNotFoundMessage(customerId, brand)));
-    }
-
-
-    public List<Car> findAllCarsByBrand(Long customerId, String brand) {
-        return carRepository.findAllByCustomerIdAndBrand(customerId, brand).orElseThrow(
-                () -> new CarNotFoundException(carNotFoundMessage(customerId, brand)));
-    }
-
-    public List<Car> findAllCarsByFuel(Long customerId, Fuel fuel) {
-        return carRepository.findByCustomerIdAndFuel(customerId, fuel).orElseThrow(
-                () -> new CarNotFoundException(carNotFoundMessage(customerId, fuel.name())));
-    }
-
-    public Car findMostExpensiveCar() {
-        return carRepository.findAll().stream()
+                .filter(Objects::nonNull)
                 .max(Comparator.comparing(Car::getPrice))
                 .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
 
-    public String carNotFoundMessage(Long id, String value) {
-        String str = "No cars found for customer " + customerRepository.findById(id).orElseThrow().getUsername();
-        if (value == null) {
-            return str;
-        } else if (value.equals("DIESEL") || value.equals("PETROL") || value.equals("ELECTRIC")
-                || value.equals("HYBRID") || value.equals("LPG")) {
-            return str + " and fuel " + value;
-        } else {
-            return str + " and brand " + value;
-        }
+    public List<Car> findAllCarsByBrand(String brand) {
+        return Optional.ofNullable(carRepository.findAllByCustomerUsername(customUserDetailsService.getCurrentUsername()))
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(car -> car.getBrand().equals(brand))
+                .toList();
     }
+
+    public Car findMostExpensiveCarByBrand(String brand) {
+        return Optional.ofNullable(carRepository.findAllByCustomerUsername(customUserDetailsService.getCurrentUsername()))
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(car -> car.getBrand().equals(brand))
+                .max(Comparator.comparing(Car::getPrice))
+                .orElseThrow(CarNotFoundException::new);
+    }
+
+    public List<Car> findAllCarsByCustomerAndFuel(Fuel fuel) {
+        return Optional.ofNullable(carRepository.findAllByCustomerUsername(customUserDetailsService.getCurrentUsername()))
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(car -> car.getFuel().equals(fuel))
+                .toList();
+    }
+
+    public Car findMostExpensiveCar() {
+        return Optional.of(carRepository.findAll())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .filter(Objects::nonNull)
+                .max(Comparator.comparing(Car::getPrice))
+                .orElseThrow(CarNotFoundException::new);
+    }
+
+//    public String carNotFoundMessage(Long id, String value) {
+////        z contextu robisz getUsername
+//        String str = "No cars found for customer " + customerRepository.findById(id).orElseThrow().getUsername();
+//        if (value == null) {
+//            return str;
+////            nazwy do stalych + zmiana kolejnosci
+//        } else if (value.equals("DIESEL") || value.equals("PETROL") || value.equals("ELECTRIC")
+//                || value.equals("HYBRID") || value.equals("LPG")) {
+//            return str + " and fuel " + value;
+//        } else {
+//            return str + " and brand " + value;
+//        }
+//    }
 }

@@ -18,7 +18,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Objects;
 
 @Service
@@ -27,13 +26,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
+//    W niektorych miejscach moze dodac logowanie za pomoca Logger @Log4j2
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (Arrays.asList("/api/v1/customer/register", "/api/v1/customer/authenticate", "/api/v1/admin/authenticate")
-                .contains(request.getServletPath())) {
+        if (request.getRequestURI().startsWith("/api/v1/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -60,6 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Invalid JWT token");
+//            Logger.error(e.getMessage, e);
             return;
         }
 

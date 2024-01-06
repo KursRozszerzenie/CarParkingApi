@@ -41,13 +41,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         throw new UsernameNotFoundException("User not found with username: " + username);
     }
 
-    public void verifyCustomerAccess(Long customerId) {
-        Customer customer = customerRepository.findByUsername(getCurrentUsername())
-                .orElseThrow(() -> new AccessDeniedException("Customer not authenticated"));
+    public void verifyCustomerAccess() {
+        verifyCustomerAccount(customerRepository.findByUsername(getCurrentUsername())
+                .orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
+    }
 
-        if (!customer.getId().equals(customerId)) {
-            throw new InvalidCredentialsException("Access denied. You can only access your own data.");
-        }
+    private void verifyCustomerAccount(Customer customer) {
         if (!customer.isAccountEnabled()) {
             throw new InvalidCredentialsException("Account not enabled");
         }
@@ -69,4 +68,5 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         throw new UserNotAuthenticatedException("User not authenticated");
     }
+
 }

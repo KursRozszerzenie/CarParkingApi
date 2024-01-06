@@ -1,10 +1,14 @@
-package com.example.carparkingapi.config.security.authentication;
+package com.example.carparkingapi.service;
 
 import com.example.carparkingapi.command.AdminCommand;
 import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.config.security.jwt.JwtService;
 import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
+import com.example.carparkingapi.exception.AdminNotFoundException;
+import com.example.carparkingapi.exception.CustomerNotFoundException;
+import com.example.carparkingapi.model.AuthenticationRequest;
+import com.example.carparkingapi.model.AuthenticationResponse;
 import com.example.carparkingapi.model.Role;
 import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
@@ -29,17 +33,16 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse registerCustomer(CustomerCommand request) {
-        Customer customer = Customer.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .credentialsNonExpired(true)
-                .accountNonExpired(true)
-                .accountNonLocked(true)
-                .accountEnabled(true)
-                .role(Role.USER)
-                .build();
+        Customer customer = new Customer();
+        customer.setFirstName(request.getFirstName());
+        customer.setLastName(request.getLastName());
+        customer.setUsername(request.getUsername());
+        customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        customer.setRole(Role.USER);
+        customer.setAccountEnabled(true);
+        customer.setAccountNonExpired(true);
+        customer.setAccountNonLocked(true);
+        customer.setCredentialsNonExpired(true);
 
         customerRepository.save(customer);
 
@@ -51,7 +54,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticateCustomer(AuthenticationRequest request) {
         Customer customer = customerRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -66,9 +69,23 @@ public class AuthenticationService {
                 .build();
     }
 
+    public AuthenticationResponse registerAdmin(AdminCommand request) {
+        Admin admin = new Admin();
+        admin.setUsername(request.getUsername());
+        admin.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        adminRepository.save(admin);
+
+        return AuthenticationResponse
+                .builder()
+                .token(jwtService.generateToken(admin))
+                .build();
+    }
+
+
     public AuthenticationResponse authenticateAdmin(AdminCommand request) {
         Admin admin = adminRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+                .orElseThrow(() -> new AdminNotFoundException("Admin not found"));
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

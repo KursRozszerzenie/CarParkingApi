@@ -1,13 +1,10 @@
 package com.example.carparkingapi.controller;
 
 import com.example.carparkingapi.command.CarCommand;
-import com.example.carparkingapi.command.CustomerCommand;
-import com.example.carparkingapi.config.security.authentication.AuthenticationRequest;
-import com.example.carparkingapi.config.security.authentication.AuthenticationResponse;
-import com.example.carparkingapi.config.security.authentication.AuthenticationService;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.model.Fuel;
+import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.CustomUserDetailsService;
@@ -26,104 +23,86 @@ import java.util.List;
 @RequestMapping("/api/v1/customer")
 public class CustomerController {
 
-    private final AuthenticationService authService;
-
     private final CarService carService;
 
     private final CustomerRepository customerRepository;
+
+    private final CarRepository carRepository;
 
     private final ModelMapper modelMapper;
 
     private final CustomUserDetailsService customUserDetailsService;
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> registerCustomer(@RequestBody @Valid CustomerCommand request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerCustomer(request));
+    @GetMapping("/cars")
+    public ResponseEntity<List<CarDTO>> getCarsByCustomer() {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(carService.findAllCarsByCustomer(), HttpStatus.OK);
     }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        return ResponseEntity.ok(authService.authenticateCustomer(request));
-    }
+    @PostMapping("/save")
+    public ResponseEntity<CarDTO> addCarToCustomer(@RequestBody @Valid CarCommand carCommand) {
 
-    @GetMapping("/{customerId}/cars")
-    public ResponseEntity<List<CarDTO>> getCarsByCustomerId(@PathVariable Long customerId) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
-        return new ResponseEntity<>(carService.findAllCarsByCustomerId(customerId), HttpStatus.OK);
-    }
-
-    @PostMapping("/{customerId}/save")
-    public ResponseEntity<CarDTO> addCarToCustomer(@PathVariable Long customerId,
-                                                   @RequestBody @Valid CarCommand carCommand) {
-
-        customUserDetailsService.verifyCustomerAccess(customerId);
+        customUserDetailsService.verifyCustomerAccess();
         Car car = modelMapper.map(carCommand, Car.class);
-        car.setCustomer(customerRepository.findByUsername(customUserDetailsService.getCurrentUsername())
-                .orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
+        car.setCustomer(customerRepository.findByUsername(customUserDetailsService.getCurrentUsername()).orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
         return new ResponseEntity<>(modelMapper.map(carService.save(car), CarDTO.class), HttpStatus.CREATED);
     }
 
-    @PostMapping("/{customerId}/save/batch")
-    public ResponseEntity<List<CarDTO>> saveAll(@PathVariable Long customerId,
-                                                @RequestBody @Valid List<CarCommand> carCommands) {
+    @PostMapping("/save/batch")
+    public ResponseEntity<List<CarDTO>> saveAll(@RequestBody @Valid List<CarCommand> carCommands) {
 
-        customUserDetailsService.verifyCustomerAccess(customerId);
+        customUserDetailsService.verifyCustomerAccess();
         List<Car> cars = carCommands.stream().map(command -> {
             Car car = modelMapper.map(command, Car.class);
-            car.setCustomer(customerRepository.findById(customerId)
-                    .orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
+            car.setCustomer(customerRepository.findByUsername(customUserDetailsService.getCurrentUsername()).orElseThrow(() -> new AccessDeniedException("Customer not authenticated")));
             return car;
         }).toList();
 
-        return new ResponseEntity<>(carService.saveAll(cars).stream()
-                .map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.CREATED);
+        return new ResponseEntity<>(carService.saveAll(cars).stream().map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{customerId}/cars/{carId}/delete")
-    public ResponseEntity<String> deleteCar(@PathVariable Long customerId, @PathVariable Long carId) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
-        return new ResponseEntity<>(carService.delete(carId), HttpStatus.OK);
+    //// metoda do updateowania samochodu
+
+    @DeleteMapping("/cars/{carId}/delete")
+    public ResponseEntity<Void> deleteCar(@PathVariable Long carId) {
+        customUserDetailsService.verifyCustomerAccess();
+        carService.delete(carId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/{customerId}/cars/{carId}/park/{parkingId}")
-    public ResponseEntity<CarDTO> parkCar(@PathVariable Long customerId, @PathVariable Long carId,
-                                          @PathVariable Long parkingId) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
+    @PostMapping("/cars/{carId}/park/{parkingId}")
+    public ResponseEntity<CarDTO> parkCar(@PathVariable Long carId, @PathVariable Long parkingId) {
+        customUserDetailsService.verifyCustomerAccess();
         return new ResponseEntity<>(carService.parkCar(carId, parkingId), HttpStatus.OK);
     }
 
-    @PostMapping("/{customerId}/cars/{carId}/leave")
-    public ResponseEntity<String> leaveParking(@PathVariable Long customerId, @PathVariable Long carId) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
+    @PostMapping("/cars/{carId}/leave")
+    public ResponseEntity<String> leaveParking(@PathVariable Long carId) {
+        customUserDetailsService.verifyCustomerAccess();
         return new ResponseEntity<>(carService.leaveParking(carId), HttpStatus.OK);
     }
 
-    @GetMapping("/{customerId}/cars/most-expensive")
-    public ResponseEntity<CarDTO> getMostExpensiveCar(@PathVariable Long customerId) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
-        return new ResponseEntity<>(modelMapper.map(carService
-                .findMostExpensiveCarForCustomer(customerId), CarDTO.class), HttpStatus.OK);
+    @GetMapping("/cars/most-expensive")
+    public ResponseEntity<CarDTO> getMostExpensiveCar() {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(modelMapper.map(carService.findMostExpensiveCarForCustomer(), CarDTO.class), HttpStatus.OK);
     }
 
-    @GetMapping("/{customerId}/cars/most-expensive/{brand}")
-    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable Long customerId,
-                                                             @PathVariable String brand) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
-        return new ResponseEntity<>(modelMapper.map(carService
-                .findMostExpensiveCarByBrand(customerId, brand), CarDTO.class), HttpStatus.OK);
+    @GetMapping("/cars/most-expensive/{brand}")
+    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand) {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(modelMapper.map(carService.findMostExpensiveCarByBrand(brand), CarDTO.class), HttpStatus.OK);
     }
 
-    @GetMapping("/{customerId}/cars/all/{brand}")
-    public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable Long customerId, @PathVariable String brand) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
-        return new ResponseEntity<>(carService.findAllCarsByBrand(customerId, brand).stream()
-                .map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.OK);
+    @GetMapping("/cars/all/brand/{brand}")
+    public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable String brand) {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(carService.findAllCarsByBrand(brand).stream().map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.OK);
     }
 
-    @GetMapping("/{customerId}/cars/all/{fuel}")
-    public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Long customerId, @PathVariable Fuel fuel) {
-        customUserDetailsService.verifyCustomerAccess(customerId);
-        return new ResponseEntity<>(carService.findAllCarsByFuel(customerId, fuel).stream()
-                .map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.OK);
+    @GetMapping("/cars/all/fuel/{fuel}")
+    public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel) {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel).stream().map(car -> modelMapper.map(car, CarDTO.class)).toList(), HttpStatus.OK);
     }
 }

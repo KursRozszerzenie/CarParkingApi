@@ -30,7 +30,7 @@ public class Admin implements UserDetails, Serializable {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.ADMIN;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

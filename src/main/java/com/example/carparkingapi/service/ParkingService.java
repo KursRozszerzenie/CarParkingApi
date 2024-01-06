@@ -1,6 +1,5 @@
 package com.example.carparkingapi.service;
 
-import com.example.carparkingapi.command.ParkingCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
 import com.example.carparkingapi.dto.CarDTO;
@@ -12,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.Comparator;
 import java.util.List;
 

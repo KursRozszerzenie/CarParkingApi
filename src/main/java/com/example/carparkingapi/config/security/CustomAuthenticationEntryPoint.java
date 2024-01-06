@@ -1,4 +1,4 @@
-package com.example.carparkingapi.config.security.authentication;
+package com.example.carparkingapi.config.security;
 
 import com.example.carparkingapi.model.ApiError;
 import com.fasterxml.jackson.databind.ObjectMapper;

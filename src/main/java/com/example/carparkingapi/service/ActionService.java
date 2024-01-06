@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -17,14 +16,15 @@ public class ActionService {
     private final ActionRepository actionRepository;
 
     @Transactional
-    public void logAction(ActionType actionType) {
+    public void saveAction(ActionType actionType) {
         Action action = new Action();
         action.setActionType(actionType);
         actionRepository.save(action);
     }
 
     @Transactional
-    public void logAction(ActionType actionType, Long entityId, String entityType,
+//    zmiana nazwy na saveAction/prepareAction
+    public void saveAction(ActionType actionType, Long entityId, String entityType,
                           String fieldName, String oldValue, String newValue) {
 
             EditAction editAction = new EditAction();
@@ -35,5 +35,6 @@ public class ActionService {
             editAction.setOldValue(oldValue);
             editAction.setNewValue(newValue);
             actionRepository.save(editAction);
+
     }
 }

@@ -13,6 +13,8 @@ import com.example.carparkingapi.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import static com.example.carparkingapi.util.Constants.USERNAME;
+
 @Service
 @RequiredArgsConstructor
 public class EditService {
@@ -23,10 +25,12 @@ public class EditService {
 
     private final ParkingRepository parkingRepository;
 
+//    porozdzielac
+//    stringi z nazwami pol do stalych i pozamieniac kolejnosc warunkow
     public void verifyFieldName(String fieldName, String entityType) {
         switch (entityType) {
             case "customer" -> {
-                if (!fieldName.equals("username") && !fieldName.equals("password") && !fieldName.equals("firstName")
+                if (!USERNAME.equals(fieldName) && !fieldName.equals("password") && !fieldName.equals("firstName")
                         && !fieldName.equals("lastName")) {
                     throw new InvalidFieldNameException("Invalid field name choose from " +
                             "username, password, firstName, lastName");

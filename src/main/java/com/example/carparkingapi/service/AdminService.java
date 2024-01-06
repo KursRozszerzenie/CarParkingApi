@@ -4,7 +4,10 @@ import com.example.carparkingapi.command.EditCommand;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.domain.Parking;
-import com.example.carparkingapi.exception.*;
+import com.example.carparkingapi.exception.CarNotFoundException;
+import com.example.carparkingapi.exception.CustomerNotFoundException;
+import com.example.carparkingapi.exception.InvalidCredentialsException;
+import com.example.carparkingapi.exception.InvalidFieldNameException;
 import com.example.carparkingapi.model.ActionType;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.model.ParkingType;
@@ -13,9 +16,6 @@ import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -31,32 +31,29 @@ public class AdminService {
 
     private final AdminRepository adminRepository;
 
+    private final CustomUserDetailsService customUserDetailsService;
+
     private final CustomerRepository customerRepository;
 
     private final CarRepository carRepository;
 
     private final ParkingRepository parkingRepository;
 
-    public void verifyAndLog(Long adminId, ActionType actionType) {
-        verifyAdminAccess(adminId);
-        actionService.logAction(actionType);
+    public void verifyAdminAccessAndSaveAction(ActionType actionType) {
+        adminRepository.findByUsername(customUserDetailsService.getCurrentUsername())
+                .orElseThrow(() -> new InvalidCredentialsException("Admin not authenticated"));
+
+         actionService.saveAction(actionType);
     }
 
-    public void verifyAndLog(Long adminId, ActionType actionType, Long entityId, String entityType,
-                             String fieldName, String newValue) {
-        verifyAdminAccess(adminId);
+    public void verifyAdminAccessAndSaveAction(ActionType actionType, Long entityId, String entityType,
+                                               String fieldName, String newValue) {
+        adminRepository.findByUsername(customUserDetailsService.getCurrentUsername())
+                .orElseThrow(() -> new InvalidCredentialsException("Admin not authenticated"));
+
         editService.verifyFieldName(fieldName, entityType);
-        actionService.logAction(actionType, entityId, entityType, fieldName,
+        actionService.saveAction(actionType, entityId, entityType, fieldName,
                 editService.getOldValue(entityId, entityType, fieldName), newValue);
-    }
-
-    public void verifyAdminAccess(Long adminId) {
-        if (!adminRepository.findByUsername(getCurrentUsername())
-                .orElseThrow(InvalidCredentialsException::new)
-                .getId().
-                equals(adminId)) {
-            throw new InvalidCredentialsException();
-        }
     }
 
     public Customer updateCustomer(Long customerId, EditCommand customerEdit) {
@@ -147,13 +144,5 @@ public class AdminService {
         customer.setAccountEnabled(false);
 
         return customerRepository.save(customer);
-    }
-
-    public String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            return authentication.getName();
-        }
-        throw new UserNotAuthenticatedException();
     }
 }

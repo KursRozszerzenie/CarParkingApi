@@ -1,4 +1,4 @@
-package com.example.carparkingapi.config.security.authentication;
+package com.example.carparkingapi.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
