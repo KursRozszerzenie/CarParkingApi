@@ -2,7 +2,6 @@ package com.example.carparkingapi.service;
 
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
-import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.exception.not.found.CarNotFoundException;
 import com.example.carparkingapi.exception.not.found.ParkingNotFoundException;
 import com.example.carparkingapi.exception.parking.action.FullParkingException;
@@ -13,7 +12,6 @@ import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.model.ParkingType;
 import com.example.carparkingapi.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -24,8 +22,6 @@ import java.util.List;
 public class ParkingService {
 
     private final ParkingRepository parkingRepository;
-
-    private final ModelMapper modelMapper;
 
     public Parking save(Parking parking) {
         parking.setTakenPlaces(0);
@@ -39,29 +35,20 @@ public class ParkingService {
         return "Parking with id " + id + " deleted";
     }
 
-    public List<Parking> findAll() {
-        return parkingRepository.findAll();
-    }
-
     public Parking findById(Long id) {
         return parkingRepository.findById(id)
                 .orElseThrow(() -> new ParkingNotFoundException("Parking not found"));
     }
 
-    public List<CarDTO> findAllCarsFromParking(Long id) {
+    public List<Car> findAllCarsFromParking(Long id) {
         return findById(id).getCars().stream()
-                .map(car -> modelMapper.map(car, CarDTO.class))
                 .toList();
     }
 
-    public int countAllCarsFromParking(Long id) {
-        return findById(id).getCars().size();
-    }
-
-    public CarDTO findMostExpensiveCarFromParking(Long id) {
-        return modelMapper.map(findById(id).getCars().stream()
+    public Car findMostExpensiveCarFromParking(Long id) {
+        return findById(id).getCars().stream()
                 .max(Comparator.comparing(Car::getPrice))
-                .orElseThrow(() -> new CarNotFoundException("No cars found")), CarDTO.class);
+                .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
 
     protected void validateParkingSpace(Parking parking, Car car) {

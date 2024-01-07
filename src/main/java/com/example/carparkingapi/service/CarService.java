@@ -2,15 +2,17 @@ package com.example.carparkingapi.service;
 
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
-import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.exception.not.found.CarNotFoundException;
+import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.exception.not.found.NoCarsFoundException;
 import com.example.carparkingapi.exception.parking.action.CarParkingStatusException;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.repository.CarRepository;
+import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.util.Utils;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,15 +23,35 @@ public class CarService {
 
     private final CarRepository carRepository;
 
-    private final ParkingService parkingService;
+    private final CustomerRepository customerRepository;
 
-    private final ModelMapper modelMapper;
+    private final ParkingService parkingService;
 
     private final CustomUserDetailsService customUserDetailsService;
 
     private final Utils utils;
 
-    public CarDTO parkCar(Long carId, Long parkingId) {
+    private static final Logger logger = LogManager.getLogger(CarService.class);
+
+    public void save(Car car) {
+        car.setCustomer(customerRepository.findCustomerByUsername(customUserDetailsService.getCurrentUsername())
+                .orElseThrow(CustomerNotFoundException::new));
+        carRepository.save(car);
+    }
+
+    public void deleteCar(Long id) {
+        Car car = carRepository.findById(id).orElseThrow(CarNotFoundException::new);
+        try {
+            leaveParking(car.getId());
+        } catch (CarParkingStatusException e) {
+            logger.warn("Attempt to delete a parked car, car left parking before deletion");
+        }
+
+        car.getCustomer().getCars().remove(car);
+        carRepository.delete(car);
+    }
+
+    public void parkCar(Long carId, Long parkingId) {
         Car car = carRepository.findById(carId).orElseThrow(CarNotFoundException::new);
 
         if (Objects.nonNull(car.getParking())) {
@@ -46,10 +68,10 @@ public class CarService {
             parking.setTakenElectricPlaces(parking.getTakenElectricPlaces() + 1);
         }
 
-        return modelMapper.map(carRepository.save(car), CarDTO.class);
+        carRepository.save(car);
     }
 
-    public String leaveParking(Long carId) {
+    public void leaveParking(Long carId) {
         Car car = carRepository.findById(carId).orElseThrow(CarNotFoundException::new);
 
         Parking parking = Optional.ofNullable(car.getParking())
@@ -63,8 +85,6 @@ public class CarService {
 
         car.setParking(null);
         carRepository.save(car);
-
-        return "Car with id " + carId + " left parking with id " + parking.getId();
     }
 
     public Car findMostExpensiveCar() {
@@ -76,12 +96,11 @@ public class CarService {
                 .orElseThrow(CarNotFoundException::new);
     }
 
-    public List<CarDTO> findAllCarsByCustomer() {
+    public List<Car> findAllCarsByCustomer() {
         return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(customUserDetailsService.getCurrentUsername()))
                 .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(null)))
                 .stream()
                 .filter(Objects::nonNull)
-                .map(car -> modelMapper.map(car, CarDTO.class))
                 .toList();
     }
 
