@@ -7,14 +7,18 @@ import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.exception.not.found.AdminNotFoundException;
 import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
+import com.example.carparkingapi.exception.security.InvalidCredentialsException;
 import com.example.carparkingapi.model.AuthenticationRequest;
 import com.example.carparkingapi.model.AuthenticationResponse;
 import com.example.carparkingapi.model.Role;
 import com.example.carparkingapi.repository.AdminRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +35,9 @@ public class AuthenticationService {
     private final JwtService jwtService;
 
     private final AuthenticationManager authenticationManager;
+
+    private static final Logger logger = LogManager.getLogger(AuthenticationService.class);
+
 
     public AuthenticationResponse registerCustomer(CustomerCommand request) {
         Customer customer = new Customer();
@@ -53,12 +60,17 @@ public class AuthenticationService {
         Customer customer = customerRepository.findCustomerByUsername(request.getUsername())
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException e) {
+            logger.error(e.getMessage(), e);
+            throw new InvalidCredentialsException("Invalid credentials");
+        }
 
         return new AuthenticationResponse(jwtService.generateToken(customer));
     }
@@ -78,12 +90,17 @@ public class AuthenticationService {
         Admin admin = adminRepository.findAdminByUsername(request.getUsername())
                 .orElseThrow(() -> new AdminNotFoundException("Admin not found"));
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException e) {
+            logger.error(e.getMessage(), e);
+            throw new InvalidCredentialsException("Invalid credentials");
+        }
 
         return new AuthenticationResponse(jwtService.generateToken(admin));
     }

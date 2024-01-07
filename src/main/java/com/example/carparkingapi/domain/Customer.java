@@ -1,7 +1,6 @@
 package com.example.carparkingapi.domain;
 
 import com.example.carparkingapi.model.Role;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

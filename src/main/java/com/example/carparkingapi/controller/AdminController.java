@@ -15,6 +15,8 @@ import com.example.carparkingapi.service.AdminService;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.ParkingService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

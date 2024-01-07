@@ -29,8 +29,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {CarNotFoundException.class, ParkingNotFoundException.class, UsernameNotFoundException.class,
-            CustomerNotFoundException.class, AdminNotFoundException.class, NoCarsFoundException.class,
-            UserNotFoundException.class})
+            CustomerNotFoundException.class, AdminNotFoundException.class, NoCarsFoundException.class, UserNotFoundException.class})
     protected ResponseEntity<ApiError> handleNotFoundException(RuntimeException runtimeException) {
         return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND, runtimeException.getMessage()),
                 HttpStatus.NOT_FOUND);
@@ -87,11 +86,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                            @NotNull WebRequest request) {
 
         if (e.getCause() instanceof InvalidFormatException ife) {
-
             String detailedError = ife.getPath().stream()
                     .map(ref -> ref.getFieldName() + ": Invalid format or value")
                     .collect(Collectors.joining(", "));
-
             return new ResponseEntity<>(new ApiError(HttpStatus.BAD_REQUEST, detailedError), HttpStatus.BAD_REQUEST);
         }
 

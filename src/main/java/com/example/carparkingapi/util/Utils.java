@@ -1,15 +1,10 @@
 package com.example.carparkingapi.util;
 
-import com.example.carparkingapi.domain.Customer;
-import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
-import com.example.carparkingapi.exception.security.InvalidCredentialsException;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Component
