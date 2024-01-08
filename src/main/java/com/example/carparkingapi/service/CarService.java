@@ -41,7 +41,7 @@ public class CarService {
         carRepository.save(car);
     }
 
-    public void deleteCar(Long id) {
+    public void delete(Long id) {
         Car car = carRepository.findById(id).orElseThrow(CarNotFoundException::new);
         try {
             leaveParking(car.getId());

@@ -58,58 +58,45 @@ public class AdminController {
     private final ParkingService parkingService;
 
     @PutMapping("/customers/update/{customerId}")
-    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long customerId,
-                                                      @RequestBody EditCommand editCommand) {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.EDIT, customerId, CUSTOMER,
-                editCommand.getFieldName(), editCommand.getNewValue());
-        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService
-                .updateCustomer(customerId, editCommand)), HttpStatus.OK);
+    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long customerId, @RequestBody EditCommand editCommand) {
+        adminService.verifyAdminAccessAndSaveAction(ActionType.EDIT, customerId, CUSTOMER, editCommand.getFieldName(), editCommand.getNewValue());
+        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService.updateCustomer(customerId, editCommand)), HttpStatus.OK);
     }
 
     @PutMapping("/cars/update/{carId}")
-    public ResponseEntity<CarDTO> updateCar(@PathVariable Long carId,
-                                            @RequestBody EditCommand editCommand) {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.EDIT, carId, CAR,
-                editCommand.getFieldName(), editCommand.getNewValue());
-        return new ResponseEntity<>(carMapper.carToCarDTO(adminService
-                .updateCar(carId, editCommand)), HttpStatus.OK);
+    public ResponseEntity<CarDTO> updateCar(@PathVariable Long carId, @RequestBody EditCommand editCommand) {
+        adminService.verifyAdminAccessAndSaveAction(ActionType.EDIT, carId, CAR, editCommand.getFieldName(), editCommand.getNewValue());
+        return new ResponseEntity<>(carMapper.carToCarDTO(adminService.updateCar(carId, editCommand)), HttpStatus.OK);
     }
 
     @PutMapping("/parking/update/{parkingId}")
-    public ResponseEntity<ParkingDTO> updateParking(@PathVariable Long parkingId,
-                                                    @RequestBody @Valid EditCommand editCommand) {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.EDIT, parkingId, PARKING,
-                editCommand.getFieldName(), editCommand.getNewValue());
-        return new ResponseEntity<>(parkingMapper.parkingToParkingDTO(adminService
-                .updateParking(parkingId, editCommand)), HttpStatus.OK);
+    public ResponseEntity<ParkingDTO> updateParking(@PathVariable Long parkingId, @RequestBody @Valid EditCommand editCommand) {
+        adminService.verifyAdminAccessAndSaveAction(ActionType.EDIT, parkingId, PARKING, editCommand.getFieldName(), editCommand.getNewValue());
+        return new ResponseEntity<>(parkingMapper.parkingToParkingDTO(adminService.updateParking(parkingId, editCommand)), HttpStatus.OK);
     }
 
     @PutMapping("/customers/enable-account/{customerId}")
     public ResponseEntity<CustomerDTO> enableCustomerAccount(@PathVariable Long customerId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.ENABLE_CUSTOMER_ACCOUNT);
-        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService
-                .enableCustomerAccount(customerId)), HttpStatus.OK);
+        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService.enableCustomerAccount(customerId)), HttpStatus.OK);
     }
 
     @PutMapping("/customers/disable-account/{customerId}")
     public ResponseEntity<CustomerDTO> disableCustomerAccount(@PathVariable Long customerId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.DISABLE_CUSTOMER_ACCOUNT);
-        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService
-                .disableCustomerAccount(customerId)), HttpStatus.OK);
+        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService.disableCustomerAccount(customerId)), HttpStatus.OK);
     }
 
     @PutMapping("/customers/lock-account/{customerId}")
     public ResponseEntity<CustomerDTO> lockCustomerAccount(@PathVariable Long customerId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.LOCK_CUSTOMER_ACCOUNT);
-        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService
-                .lockCustomerAccount(customerId)), HttpStatus.OK);
+        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService.lockCustomerAccount(customerId)), HttpStatus.OK);
     }
 
     @PutMapping("/customers/unlock-account/{customerId}")
     public ResponseEntity<CustomerDTO> unlockCustomerAccount(@PathVariable Long customerId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.UNLOCK_CUSTOMER_ACCOUNT);
-        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService
-                .unlockCustomerAccount(customerId)), HttpStatus.OK);
+        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService.unlockCustomerAccount(customerId)), HttpStatus.OK);
     }
 
     @GetMapping("/action/all")
@@ -121,42 +108,37 @@ public class AdminController {
     @GetMapping("customers/all")
     public ResponseEntity<Page<CustomerDTO>> getAllCustomers(Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_CUSTOMERS);
-        return new ResponseEntity<>(customerRepository.findAll(pageable)
-                .map(customerMapper::customerToCustomerDTO), HttpStatus.OK);
+        return new ResponseEntity<>(customerRepository.findAll(pageable).map(customerMapper::customerToCustomerDTO), HttpStatus.OK);
     }
 
     @GetMapping("/cars/all")
     public ResponseEntity<Page<CarDTO>> getAllCars(@PageableDefault(size = 1, sort = "brand", direction = Sort.Direction.ASC) Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_CARS);
-        return new ResponseEntity<>(carRepository.findAll(pageable)
-                .map(carMapper::carToCarDTO), HttpStatus.OK);
+        return new ResponseEntity<>(carRepository.findAll(pageable).map(carMapper::carToCarDTO), HttpStatus.OK);
     }
 
     @GetMapping("parking/all")
     public ResponseEntity<Page<ParkingDTO>> getAllParkings(Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_PARKINGS);
-        return new ResponseEntity<>(parkingRepository.findAll(pageable)
-                .map(parkingMapper::parkingToParkingDTO), HttpStatus.OK);
+        return new ResponseEntity<>(parkingRepository.findAll(pageable).map(parkingMapper::parkingToParkingDTO), HttpStatus.OK);
     }
 
     @PostMapping("/cars/save")
-    public ResponseEntity<CarDTO> addCar(@RequestBody @Valid CarCommand carCommand) {
+    public ResponseEntity<Void> addCar(@RequestBody @Valid CarCommand carCommand) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.ADDING_CAR);
-
-        return new ResponseEntity<>(carMapper.carToCarDTO(carRepository
-                .save(carMapper.carCommandToCar(carCommand))), HttpStatus.CREATED);
+        carRepository.save(carMapper.carCommandToCar(carCommand));
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @DeleteMapping("/cars/{carId}/delete")
     public ResponseEntity<Void> deleteCar(@PathVariable Long carId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.DELETING_CAR);
-        carService.deleteCar(carId);
+        carService.delete(carId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/cars/{carId}/park/{parkingId}")
-    public ResponseEntity<Void> parkCar(@PathVariable Long carId,
-                                        @PathVariable Long parkingId) {
+    public ResponseEntity<Void> parkCar(@PathVariable Long carId, @PathVariable Long parkingId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.PARKING_CAR);
         carService.parkCar(carId, parkingId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -178,15 +160,13 @@ public class AdminController {
     @PostMapping("/parking/save")
     public ResponseEntity<ParkingDTO> saveParking(@RequestBody @Valid ParkingCommand parkingCommand) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.ADDING_PARKING);
-        return new ResponseEntity<>(parkingMapper.parkingToParkingDTO(parkingService
-                .save(parkingMapper.parkingCommandToParking(parkingCommand))), HttpStatus.CREATED);
+        return new ResponseEntity<>(parkingMapper.parkingToParkingDTO(parkingService.save(parkingMapper.parkingCommandToParking(parkingCommand))), HttpStatus.CREATED);
     }
 
     @GetMapping("/parking/{parkingId}/get")
     public ResponseEntity<ParkingDTO> getParkingById(@PathVariable Long parkingId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_PARKING);
-        return new ResponseEntity<>(parkingMapper.parkingToParkingDTO(parkingService
-                .findById(parkingId)), HttpStatus.OK);
+        return new ResponseEntity<>(parkingMapper.parkingToParkingDTO(parkingService.findById(parkingId)), HttpStatus.OK);
     }
 
     @DeleteMapping("/parking/delete/{parkingId}")
@@ -198,9 +178,7 @@ public class AdminController {
     @GetMapping("/parking/{parkingId}/cars")
     public ResponseEntity<List<CarDTO>> getAllCarsFromParking(@PathVariable Long parkingId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_CARS_FROM_PARKING);
-        return new ResponseEntity<>(parkingService.findAllCarsFromParking(parkingId).stream()
-                .map(carMapper::carToCarDTO)
-                .toList(), HttpStatus.OK);
+        return new ResponseEntity<>(parkingService.findAllCarsFromParking(parkingId).stream().map(carMapper::carToCarDTO).toList(), HttpStatus.OK);
     }
 
     @GetMapping("/parking/{parkingId}/cars/count")
@@ -212,7 +190,6 @@ public class AdminController {
     @GetMapping("/parking/{parkingId}/cars/most-expensive")
     public ResponseEntity<CarDTO> getMostExpensiveCarFromParking(@PathVariable Long parkingId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_MOST_EXPENSIVE_CAR_FROM_PARKING);
-        return new ResponseEntity<>(carMapper.carToCarDTO(parkingService
-                .findMostExpensiveCarFromParking(parkingId)), HttpStatus.OK);
+        return new ResponseEntity<>(carMapper.carToCarDTO(parkingService.findMostExpensiveCarFromParking(parkingId)), HttpStatus.OK);
     }
 }

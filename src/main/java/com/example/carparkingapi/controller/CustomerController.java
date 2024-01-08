@@ -70,7 +70,7 @@ public class CustomerController {
     @DeleteMapping("/cars/delete/{carId}")
     public ResponseEntity<Void> deleteCar(@PathVariable Long carId) {
         customUserDetailsService.verifyCustomerAccess();
-        carService.deleteCar(carId);
+        carService.delete(carId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
