@@ -11,16 +11,20 @@ import com.example.carparkingapi.dto.CustomerDTO;
 import com.example.carparkingapi.dto.ParkingDTO;
 import com.example.carparkingapi.model.ActionType;
 import com.example.carparkingapi.repository.CarRepository;
+import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.repository.ParkingRepository;
 import com.example.carparkingapi.service.AdminService;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.ParkingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 import static com.example.carparkingapi.util.Constants.*;
@@ -43,6 +47,8 @@ public class AdminController {
     private final CarRepository carRepository;
 
     private final ParkingRepository parkingRepository;
+
+    private final CustomerRepository customerRepository;
 
     private final ParkingService parkingService;
 
@@ -99,6 +105,16 @@ public class AdminController {
         adminService.verifyAdminAccessAndSaveAction(ActionType.UNLOCK_CUSTOMER_ACCOUNT);
         return new ResponseEntity<>(customerMapper.customerToCustomerDTO(adminService
                 .unlockCustomerAccount(customerId)), HttpStatus.OK);
+    }
+
+    @GetMapping("customers/all")
+    public ResponseEntity<Page<CustomerDTO>> getAllCustomers(Pageable pageable) {
+        adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_CUSTOMERS);
+
+        Page<CustomerDTO> customerDTOs = customerRepository.findAll(pageable)
+                .map(customerMapper::customerToCustomerDTO);
+
+        return new ResponseEntity<>(customerDTOs, HttpStatus.OK);
     }
 
     @PostMapping("/cars/save")
