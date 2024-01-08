@@ -4,6 +4,8 @@ import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.model.Role;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.github.javafaker.Faker;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,14 +21,18 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private final Faker faker = new Faker();
+
+    private static final Logger logger = LogManager.getLogger(DataLoader.class);
+
     @Override
     public void run(String... args) throws Exception {
+//        logger.info("loading test customers");
 //        loadCustomers();
+//        logger.info("test customers loaded");
     }
 
     private void loadCustomers() {
-        Faker faker = new Faker();
-
         for (int i = 0; i < 100; i++) {
             Customer customer = new Customer();
             customer.setFirstName(faker.name().firstName());

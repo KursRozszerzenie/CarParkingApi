@@ -17,8 +17,6 @@ import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

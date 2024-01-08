@@ -17,7 +17,7 @@ import java.time.LocalDate;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorFormula("action_type")
+@DiscriminatorFormula("case when action_type='EDIT' then 'EditAction' else 'Action' end")
 @Getter
 @Setter
 @EqualsAndHashCode

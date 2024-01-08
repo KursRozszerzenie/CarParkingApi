@@ -12,6 +12,8 @@ import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,12 +37,12 @@ public class CustomerController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @GetMapping("/cars")
-    public ResponseEntity<List<CarDTO>> getCarsByCustomer() {
+    public ResponseEntity<Page<CarDTO>> getCarsByCustomer(Pageable pageable) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByCustomer().stream()
-                .map(carMapper::carToCarDTO)
-                .toList(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findAllCarsByCustomer(pageable)
+                .map(carMapper::carToCarDTO), HttpStatus.OK);
     }
+
 
     @PostMapping("/save")
     public ResponseEntity<Void> addCarToCustomer(@RequestBody @Valid CarCommand carCommand) {

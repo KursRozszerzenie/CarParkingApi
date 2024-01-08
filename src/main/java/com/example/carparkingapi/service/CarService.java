@@ -13,6 +13,8 @@ import com.example.carparkingapi.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -96,12 +98,11 @@ public class CarService {
                 .orElseThrow(CarNotFoundException::new);
     }
 
-    public List<Car> findAllCarsByCustomer() {
-        return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(customUserDetailsService.getCurrentUsername()))
-                .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(null)))
-                .stream()
-                .filter(Objects::nonNull)
-                .toList();
+    public Page<Car> findAllCarsByCustomer(Pageable pageable) {
+        return Optional.ofNullable(
+                        carRepository.findAllCarsByCustomerUsername(
+                                customUserDetailsService.getCurrentUsername(), pageable))
+                .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(null)));
     }
 
     public Car findMostExpensiveCarForCustomer() {

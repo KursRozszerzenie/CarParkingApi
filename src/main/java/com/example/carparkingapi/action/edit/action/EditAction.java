@@ -10,7 +10,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("EDIT")
+@DiscriminatorValue("EditAction")
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
