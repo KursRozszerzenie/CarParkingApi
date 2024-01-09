@@ -45,7 +45,7 @@ public class CustomerController {
 
 
     @PostMapping("/save")
-    public ResponseEntity<Void> addCarToCustomer(@RequestBody @Valid CarCommand carCommand) {
+    public ResponseEntity<Void> saveNewCar(@RequestBody @Valid CarCommand carCommand) {
         customUserDetailsService.verifyCustomerAccess();
         carService.save(carMapper.carCommandToCar(carCommand));
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -103,12 +103,14 @@ public class CustomerController {
     @GetMapping("/cars/all/brand/{brand}")
     public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable String brand) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByBrand(brand).stream().map(carMapper::carToCarDTO).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findAllCarsByBrand(brand).stream()
+                .map(carMapper::carToCarDTO).toList(), HttpStatus.OK);
     }
 
     @GetMapping("/cars/all/fuel/{fuel}")
     public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel).stream().map(carMapper::carToCarDTO).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel).stream()
+                .map(carMapper::carToCarDTO).toList(), HttpStatus.OK);
     }
 }

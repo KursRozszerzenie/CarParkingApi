@@ -1,5 +1,6 @@
 package com.example.carparkingapi.domain;
 
+import com.example.carparkingapi.action.Action;
 import com.example.carparkingapi.model.Role;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,8 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 @Getter
 @Setter
@@ -30,6 +30,14 @@ public class Admin implements UserDetails, Serializable {
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.ADMIN;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL)
+    private List<Action> createdActions;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "lastModifiedBy", cascade = CascadeType.ALL)
+    private List<Action> modifiedActions;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

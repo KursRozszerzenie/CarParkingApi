@@ -42,7 +42,8 @@ public class CarService {
     }
 
     public void delete(Long id) {
-        Car car = carRepository.findById(id).orElseThrow(CarNotFoundException::new);
+        Car car = carRepository.findById(id)
+                .orElseThrow(CarNotFoundException::new);
         try {
             leaveParking(car.getId());
         } catch (CarParkingStatusException e) {
@@ -54,7 +55,8 @@ public class CarService {
     }
 
     public void parkCar(Long carId, Long parkingId) {
-        Car car = carRepository.findById(carId).orElseThrow(CarNotFoundException::new);
+        Car car = carRepository.findById(carId)
+                .orElseThrow(CarNotFoundException::new);
 
         if (Objects.nonNull(car.getParking())) {
             throw new CarParkingStatusException("Car is already parked");
@@ -99,14 +101,14 @@ public class CarService {
     }
 
     public Page<Car> findAllCarsByCustomer(Pageable pageable) {
-        return Optional.ofNullable(
-                        carRepository.findAllCarsByCustomerUsername(
-                                customUserDetailsService.getCurrentUsername(), pageable))
+        return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(
+                        customUserDetailsService.getCurrentUsername(), pageable))
                 .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(null)));
     }
 
     public Car findMostExpensiveCarForCustomer() {
-        return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(customUserDetailsService.getCurrentUsername()))
+        return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(
+                        customUserDetailsService.getCurrentUsername()))
                 .orElseThrow(() -> new CarNotFoundException(utils.noCarsFoundMessage(null)))
                 .stream()
                 .filter(Objects::nonNull)

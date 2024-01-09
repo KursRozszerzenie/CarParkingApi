@@ -1,9 +1,14 @@
 package com.example.carparkingapi.service;
 
+import com.example.carparkingapi.action.Action;
+import com.example.carparkingapi.action.edit.action.EditAction;
 import com.example.carparkingapi.command.EditCommand;
+import com.example.carparkingapi.config.map.struct.ActionMapper;
+import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.domain.Parking;
+import com.example.carparkingapi.dto.ActionDTO;
 import com.example.carparkingapi.exception.not.found.CarNotFoundException;
 import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.exception.not.found.ParkingNotFoundException;
@@ -20,6 +25,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.example.carparkingapi.util.Constants.*;
 
@@ -41,17 +49,22 @@ public class AdminService {
 
     private final ParkingRepository parkingRepository;
 
+    private final ActionMapper actionMapper;
+
     public void verifyAdminAccessAndSaveAction(ActionType actionType) {
-        adminRepository.findAdminByUsername(customUserDetailsService.getCurrentUsername())
-                .orElseThrow(() -> new InvalidCredentialsException(ADMIN_NOT_AUTHORIZED_ERROR_MESSAGE));
+        if (!adminRepository.existsAdminByUsername(customUserDetailsService.getCurrentUsername())) {
+            throw new InvalidCredentialsException(ADMIN_NOT_AUTHORIZED_ERROR_MESSAGE);
+        }
 
         actionService.saveAction(actionType);
     }
 
     public void verifyAdminAccessAndSaveAction(ActionType actionType, Long entityId, String entityType,
                                                String fieldName, String newValue) {
-        adminRepository.findAdminByUsername(customUserDetailsService.getCurrentUsername())
-                .orElseThrow(() -> new InvalidCredentialsException(ADMIN_NOT_AUTHORIZED_ERROR_MESSAGE));
+        if (!adminRepository.existsAdminByUsername(customUserDetailsService.getCurrentUsername())) {
+            throw new InvalidCredentialsException(ADMIN_NOT_AUTHORIZED_ERROR_MESSAGE);
+        }
+
 
         editService.verifyFieldName(fieldName, entityType);
         actionService.saveAction(actionType, entityId, entityType, fieldName,
@@ -144,5 +157,10 @@ public class AdminService {
         customer.setAccountEnabled(false);
 
         return customerRepository.save(customer);
+    }
+
+    public List<Action> getActionsForAdmin() {
+        Admin currentAdmin = (Admin) customUserDetailsService.loadUserByUsername(customUserDetailsService.getCurrentUsername());
+        return currentAdmin.getCreatedActions();
     }
 }

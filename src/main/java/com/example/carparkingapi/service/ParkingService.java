@@ -51,6 +51,7 @@ public class ParkingService {
                 .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
 
+//    to do zmiany .equals
     protected void validateParkingSpace(Parking parking, Car car) {
         if (parking.getTakenPlaces() >= parking.getCapacity()) {
             throw new FullParkingException("Parking is already full");

@@ -45,6 +45,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             return adminOptional.get();
         }
 
+//        dodac messgae
         throw new UserNotFoundException();
     }
 

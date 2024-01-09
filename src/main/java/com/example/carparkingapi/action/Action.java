@@ -1,5 +1,6 @@
 package com.example.carparkingapi.action;
 
+import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.model.ActionType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -33,14 +35,18 @@ public class Action {
     @Enumerated(EnumType.STRING)
     private ActionType actionType;
 
-    @CreatedBy
-    private String createdBy;
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_admin_id")
+    private Admin createdBy;
+
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_modified_by_admin_id")
+    private Admin lastModifiedBy;
 
     @CreatedDate
     private LocalDate createdDate;
-
-    @LastModifiedBy
-    private String lastModifiedBy;
 
     @LastModifiedDate
     private LocalDate lastModifiedDate;

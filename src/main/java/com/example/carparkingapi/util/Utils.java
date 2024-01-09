@@ -16,7 +16,9 @@ public class Utils {
 
     public String noCarsFoundMessage(String value) {
         String str = "No cars found for customer " + customerRepository
-                .findCustomerByUsername(customUserDetailsService.getCurrentUsername()).orElseThrow().getUsername();
+                .findCustomerByUsername(customUserDetailsService.getCurrentUsername())
+                .orElseThrow()//dodaj error
+                .getUsername();
         if (value == null) {
             return str;
         } else if (Fuel.DIESEL.toString().equals(value) || Fuel.PETROL.toString().equals(value)

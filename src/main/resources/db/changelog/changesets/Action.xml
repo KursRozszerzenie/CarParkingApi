@@ -11,13 +11,13 @@
             <column name="action_type" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_by" type="varchar(255)">
-                <constraints nullable="false"/>
+            <column name="created_by_admin_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+            <column name="last_modified_by_admin_id" type="bigint">
+                <constraints nullable="true"/>
             </column>
             <column name="created_date" type="date">
-                <constraints nullable="false"/>
-            </column>
-            <column name="last_modified_by" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="last_modified_date" type="date">
@@ -29,5 +29,14 @@
             <column name="old_value" type="varchar(255)"/>
             <column name="new_value" type="varchar(255)"/>
         </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_action_created_by"
+                                 baseTableName="action" baseColumnNames="created_by_admin_id"
+                                 referencedTableName="admin" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint constraintName="fk_action_last_modified_by"
+                                 baseTableName="action" baseColumnNames="last_modified_by_admin_id"
+                                 referencedTableName="admin" referencedColumnNames="id"/>
     </changeSet>
+
 </databaseChangeLog>
