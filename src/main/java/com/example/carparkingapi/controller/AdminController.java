@@ -13,6 +13,10 @@ import com.example.carparkingapi.service.AdminService;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.ParkingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -88,27 +92,31 @@ public class AdminController {
     }
 
     @GetMapping("/action/all")
-    public ResponseEntity<List<ActionDTO>> getAllActions() {
+    public ResponseEntity<Page<ActionDTO>> getAllActions(
+        @PageableDefault(size = 15, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_ACTIONS);
-        return new ResponseEntity<>(actionService.getActionsForAdmin(), HttpStatus.OK);
+        return new ResponseEntity<>(actionService.getActionsForAdmin(pageable), HttpStatus.OK);
     }
 
     @GetMapping("customers/all")
-    public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
+    public ResponseEntity<Page<CustomerDTO>> getAllCustomers(
+            @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_CUSTOMERS);
-        return new ResponseEntity<>(adminService.getAllCustomers(), HttpStatus.OK);
+        return new ResponseEntity<>(adminService.getAllCustomers(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/cars/all")
-    public ResponseEntity<List<CarDTO>> getAllCars() {
+    public ResponseEntity<Page<CarDTO>> getAllCars(
+            @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_CARS);
-        return new ResponseEntity<>(carService.getAllCars(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.getAllCars(pageable), HttpStatus.OK);
     }
 
-    @GetMapping("parking/all")
-    public ResponseEntity<List<ParkingDTO>> getAllParkings() {
+    @GetMapping("/parking/all")
+    public ResponseEntity<Page<ParkingDTO>> getAllParkings(
+            @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_PARKINGS);
-        return new ResponseEntity<>(parkingService.getAllParkings(), HttpStatus.OK);
+        return new ResponseEntity<>(parkingService.getAllParkings(pageable), HttpStatus.OK);
     }
 
     @PostMapping("/cars/save")
@@ -119,14 +127,14 @@ public class AdminController {
     }
 
     @PostMapping("cars/save/batch")
-    public ResponseEntity<List<Void>> saveAll(@RequestBody @Valid List<CarCommand> carCommands) {
+    public ResponseEntity<Void> saveAll(@RequestBody @Valid List<CarCommand> carCommands) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.ADDING_CAR);
-        carService.saveBatch(carCommands);
+        carService.saveBatchWithoutCustomer(carCommands);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping("/parking/save")
-    public ResponseEntity<ParkingDTO> saveParking(@RequestBody @Valid ParkingCommand parkingCommand) {
+    public ResponseEntity<Void> saveParking(@RequestBody @Valid ParkingCommand parkingCommand) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.ADDING_PARKING);
         parkingService.save(parkingCommand);
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -167,9 +175,10 @@ public class AdminController {
     }
 
     @GetMapping("/parking/{parkingId}/cars")
-    public ResponseEntity<List<CarDTO>> getAllCarsFromParking(@PathVariable Long parkingId) {
+    public ResponseEntity<Page<CarDTO>> getAllCarsFromParking(@PathVariable Long parkingId,
+      @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_ALL_CARS_FROM_PARKING);
-        return new ResponseEntity<>(parkingService.findAllCarsFromParking(parkingId), HttpStatus.OK);
+        return new ResponseEntity<>(parkingService.findAllCarsFromParking(parkingId, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/parking/{parkingId}/cars/count")

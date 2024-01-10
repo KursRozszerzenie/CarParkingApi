@@ -8,10 +8,11 @@ import com.example.carparkingapi.dto.ActionDTO;
 import com.example.carparkingapi.model.ActionType;
 import com.example.carparkingapi.repository.ActionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,10 +56,8 @@ public class ActionService {
         actionRepository.save(editAction);
     }
 
-    public List<ActionDTO> getActionsForAdmin() {
+    public Page<ActionDTO> getActionsForAdmin(Pageable pageable) {
         Admin currentAdmin = (Admin) customUserDetailsService.loadUserByUsername(customUserDetailsService.getCurrentUsername());
-        return currentAdmin.getCreatedActions().stream()
-                .map(actionMapper::actionToActionDTO)
-                .toList();
+        return actionRepository.findByCreatedBy(currentAdmin, pageable).map(actionMapper::actionToActionDTO);
     }
 }

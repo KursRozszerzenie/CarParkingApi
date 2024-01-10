@@ -23,10 +23,11 @@ import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static com.example.carparkingapi.util.Constants.*;
 
@@ -74,11 +75,11 @@ public class AdminService {
                 editService.getOldValue(entityId, entityType, fieldName), newValue);
     }
 
-    public List<CustomerDTO> getAllCustomers() {
-        return customerRepository.findAll().stream()
-                .map(customerMapper::customerToCustomerDTO)
-                .toList();
+    public Page<CustomerDTO> getAllCustomers(Pageable pageable) {
+        return customerRepository.findAll(pageable)
+                .map(customerMapper::customerToCustomerDTO);
     }
+
 
     public CustomerDTO updateCustomer(Long customerId, EditCommand customerEdit) {
         Customer customer = customerRepository.findById(customerId)

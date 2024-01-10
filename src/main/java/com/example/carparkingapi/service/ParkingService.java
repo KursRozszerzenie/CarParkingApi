@@ -9,18 +9,20 @@ import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.dto.ParkingDTO;
 import com.example.carparkingapi.exception.not.found.CarNotFoundException;
 import com.example.carparkingapi.exception.not.found.ParkingNotFoundException;
-import com.example.carparkingapi.exception.parking.action.FullParkingException;
-import com.example.carparkingapi.exception.parking.action.LPGNotAllowedException;
-import com.example.carparkingapi.exception.parking.action.NoMoreElectricPlacesException;
-import com.example.carparkingapi.exception.parking.action.ParkingSpaceToSmallException;
+import com.example.carparkingapi.exception.parking.FullParkingException;
+import com.example.carparkingapi.exception.parking.LPGNotAllowedException;
+import com.example.carparkingapi.exception.parking.NoMoreElectricPlacesException;
+import com.example.carparkingapi.exception.parking.ParkingSpaceToSmallException;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.model.ParkingType;
+import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.ParkingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
-import java.util.List;
 
 import static com.example.carparkingapi.util.Constants.*;
 
@@ -29,6 +31,8 @@ import static com.example.carparkingapi.util.Constants.*;
 public class ParkingService {
 
     private final ParkingRepository parkingRepository;
+
+    private final CarRepository carRepository;
 
     private final ParkingMapper parkingMapper;
 
@@ -46,10 +50,8 @@ public class ParkingService {
         parkingRepository.delete(parking);
     }
 
-    public List<ParkingDTO> getAllParkings() {
-        return parkingRepository.findAll().stream()
-                .map(parkingMapper::parkingToParkingDTO)
-                .toList();
+    public Page<ParkingDTO> getAllParkings(Pageable pageable) {
+        return parkingRepository.findAll(pageable).map(parkingMapper::parkingToParkingDTO);
     }
 
     public Parking findById(Long id) {
@@ -57,11 +59,11 @@ public class ParkingService {
                 .orElseThrow(() -> new ParkingNotFoundException(PARKING_NOT_FOUND_ERROR_MESSAGE));
     }
 
-    public List<CarDTO> findAllCarsFromParking(Long id) {
-        return findById(id).getCars().stream()
-                .map(carMapper::carToCarDTO)
-                .toList();
+    public Page<CarDTO> findAllCarsFromParking(Long id, Pageable pageable) {
+        return carRepository.findAllByParkingId(id, pageable)
+                .map(carMapper::carToCarDTO);
     }
+
 
     public CarDTO findMostExpensiveCarFromParking(Long id) {
         return findById(id).getCars().stream()

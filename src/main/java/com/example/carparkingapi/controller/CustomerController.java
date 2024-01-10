@@ -6,6 +6,10 @@ import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +27,36 @@ public class CustomerController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @GetMapping("/cars")
-    public ResponseEntity<List<CarDTO>> getCarsByCustomer() {
+    public ResponseEntity<Page<CarDTO>> getCarsByCustomer(
+        @PageableDefault(size = 15, sort = "brand", direction = Sort.Direction.DESC) Pageable pageable) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByCustomer(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findAllCarsByCustomer(pageable), HttpStatus.OK);
+    }
+
+    @GetMapping("/cars/all/brand/{brand}")
+    public ResponseEntity<Page<CarDTO>> getAllCarsByBrand(@PathVariable String brand,
+        @PageableDefault(size = 15, sort = "brand", direction = Sort.Direction.DESC) Pageable pageable) {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(carService.findAllCarsByCustomerAndBrand(brand, pageable), HttpStatus.OK);
+    }
+
+    @GetMapping("/cars/all/fuel/{fuel}")
+    public ResponseEntity<Page<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel,
+        @PageableDefault(size = 15, sort = "brand", direction = Sort.Direction.DESC) Pageable pageable) {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel, pageable), HttpStatus.OK);
+    }
+
+    @GetMapping("/cars/most-expensive")
+    public ResponseEntity<CarDTO> getMostExpensiveCar() {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>(carService.findMostExpensiveCarForCustomer(), HttpStatus.OK);
+    }
+
+    @GetMapping("/cars/most-expensive/{brand}")
+    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand) {
+        customUserDetailsService.verifyCustomerAccess();
+        return new ResponseEntity<>((carService.findMostExpensiveCarByCustomerAndBrand(brand)), HttpStatus.OK);
     }
 
     @PostMapping("cars/save")
@@ -61,29 +92,5 @@ public class CustomerController {
         customUserDetailsService.verifyCustomerAccess();
         carService.leaveParking(carId);
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping("/cars/most-expensive")
-    public ResponseEntity<CarDTO> getMostExpensiveCar() {
-        customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findMostExpensiveCarForCustomer(), HttpStatus.OK);
-    }
-
-    @GetMapping("/cars/most-expensive/{brand}")
-    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand) {
-        customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>((carService.findMostExpensiveCarByBrand(brand)), HttpStatus.OK);
-    }
-
-    @GetMapping("/cars/all/brand/{brand}")
-    public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable String brand) {
-        customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByBrand(brand), HttpStatus.OK);
-    }
-
-    @GetMapping("/cars/all/fuel/{fuel}")
-    public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel) {
-        customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel), HttpStatus.OK);
     }
 }

@@ -2,7 +2,7 @@ package com.example.carparkingapi.config;
 
 import com.example.carparkingapi.exception.not.found.*;
 import com.example.carparkingapi.exception.other.InvalidFieldNameException;
-import com.example.carparkingapi.exception.parking.action.*;
+import com.example.carparkingapi.exception.parking.*;
 import com.example.carparkingapi.exception.security.InvalidCredentialsException;
 import com.example.carparkingapi.exception.security.UserNotAuthenticatedException;
 import com.example.carparkingapi.model.ApiError;
