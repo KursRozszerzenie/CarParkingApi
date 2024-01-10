@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import static com.example.carparkingapi.util.Constants.CUSTOMER_NOT_AUTHORIZED_ERROR_MESSAGE;
+import static com.example.carparkingapi.util.Constants.USER_NOT_FOUND_ERROR_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,11 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new AccessDeniedException(CUSTOMER_NOT_AUTHORIZED_ERROR_MESSAGE)));
     }
 
+    public Customer getCurrentCustomer() {
+        return customerRepository.findCustomerByUsername(getCurrentUsername())
+                .orElseThrow(() -> new AccessDeniedException(CUSTOMER_NOT_AUTHORIZED_ERROR_MESSAGE));
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) {
         Optional<Customer> customerOptional = customerRepository.findCustomerByUsername(username);
@@ -45,8 +51,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             return adminOptional.get();
         }
 
-//        dodac messgae
-        throw new UserNotFoundException();
+        throw new UserNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
     }
 
     private void verifyCustomerAccount(Customer customer) {
@@ -69,6 +74,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
             return authentication.getName();
         }
-        throw new UserNotAuthenticatedException("User not authenticated");
+        throw new UserNotAuthenticatedException(CUSTOMER_NOT_AUTHORIZED_ERROR_MESSAGE);
     }
 }

@@ -4,22 +4,21 @@ import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.model.Role;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.github.javafaker.Faker;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 
 @Component
+@RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final  PasswordEncoder passwordEncoder;
 
     private final Faker faker = new Faker();
 

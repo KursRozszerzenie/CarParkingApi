@@ -79,6 +79,12 @@ public class Constants {
 
     ////// Error messages //////
 
+    public static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
+
+    public static final String PARKING_NOT_FOUND_ERROR_MESSAGE = "Parking not found";
+
+    public static final String CAR_NOT_FOUND_ERROR_MESSAGE = "Parking not found";
+
     private static final String INVALID_FIELD_NAME_ERROR_MESSAGE = "Invalid field name, choose from ";
 
     public static final String CUSTOMER_FIELD_ERROR_MESSAGE = INVALID_FIELD_NAME_ERROR_MESSAGE + CUSTOMER_FIELDS;
@@ -92,5 +98,15 @@ public class Constants {
     public static final String ADMIN_NOT_AUTHORIZED_ERROR_MESSAGE = "Admin not authorized";
 
     public static final String CUSTOMER_NOT_AUTHORIZED_ERROR_MESSAGE = "Customer not authorized";
+
+    public static final String PARKING_FULL_ERROR_MESSAGE = "Parking is already full";
+
+    public static final String PARKING_SPACE_TO_SMALL_ERROR_MESSAGE = "Parking space is too small for this car";
+
+    public static final String NO_MORE_ELECTRIC_PLACES_ERROR_MESSAGE = "This parking has no more electric places";
+
+    public static final String PARKING_NOT_ALLOW_LPG_CAR_ERROR_MESSAGE = "This parking does not allow LPG cars";
+
+
 
 }

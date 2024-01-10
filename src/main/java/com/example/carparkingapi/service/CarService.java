@@ -1,7 +1,11 @@
 package com.example.carparkingapi.service;
 
+import com.example.carparkingapi.command.CarCommand;
+import com.example.carparkingapi.config.map.struct.CarMapper;
 import com.example.carparkingapi.domain.Car;
+import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.domain.Parking;
+import com.example.carparkingapi.dto.CarDTO;
 import com.example.carparkingapi.exception.not.found.CarNotFoundException;
 import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.exception.not.found.NoCarsFoundException;
@@ -13,8 +17,7 @@ import com.example.carparkingapi.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,14 +34,41 @@ public class CarService {
 
     private final CustomUserDetailsService customUserDetailsService;
 
+    private final CarMapper carMapper;
+
     private final Utils utils;
 
     private static final Logger logger = LogManager.getLogger(CarService.class);
 
-    public void save(Car car) {
+    public List<CarDTO> getAllCars() {
+        return carRepository.findAll().stream()
+                .map(carMapper::carToCarDTO)
+                .toList();
+    }
+
+    public void save(CarCommand carCommand) {
+        Car car = carMapper.carCommandToCar(carCommand);
         car.setCustomer(customerRepository.findCustomerByUsername(customUserDetailsService.getCurrentUsername())
                 .orElseThrow(CustomerNotFoundException::new));
         carRepository.save(car);
+    }
+
+    public void saveWithoutCustomer(CarCommand carCommand) {
+        carRepository.save(carMapper.carCommandToCar(carCommand));
+    }
+
+    public void saveBatch(List<CarCommand> carCommands, Customer customer) {
+        carRepository.saveAll(carCommands.stream().map(command -> {
+            Car car = carMapper.carCommandToCar(command);
+            car.setCustomer(customer);
+            return car;
+        }).toList());
+    }
+
+    public void saveBatch(List<CarCommand> carCommands) {
+        carRepository.saveAll(carCommands.stream()
+                .map(carMapper::carCommandToCar)
+                .toList());
     }
 
     public void delete(Long id) {
@@ -91,56 +121,63 @@ public class CarService {
         carRepository.save(car);
     }
 
-    public Car findMostExpensiveCar() {
+    public CarDTO findMostExpensiveCar() {
         return Optional.of(carRepository.findAll())
                 .orElseGet(Collections::emptyList)
                 .stream()
                 .filter(Objects::nonNull)
                 .max(Comparator.comparing(Car::getPrice))
+                .map(carMapper::carToCarDTO)
                 .orElseThrow(CarNotFoundException::new);
     }
 
-    public Page<Car> findAllCarsByCustomer(Pageable pageable) {
+    public List<CarDTO> findAllCarsByCustomer() {
         return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(
-                        customUserDetailsService.getCurrentUsername(), pageable))
-                .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(null)));
+                        customUserDetailsService.getCurrentUsername()))
+                .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(null))).stream()
+                .map(carMapper::carToCarDTO)
+                .toList();
     }
 
-    public Car findMostExpensiveCarForCustomer() {
+    public CarDTO findMostExpensiveCarForCustomer() {
         return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(
                         customUserDetailsService.getCurrentUsername()))
                 .orElseThrow(() -> new CarNotFoundException(utils.noCarsFoundMessage(null)))
                 .stream()
                 .filter(Objects::nonNull)
-                .max(Comparator.comparing(Car::getPrice))
+                .map(carMapper::carToCarDTO)
+                .max(Comparator.comparing(CarDTO::getPrice))
                 .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
 
-    public List<Car> findAllCarsByBrand(String brand) {
+    public List<CarDTO> findAllCarsByBrand(String brand) {
         return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(customUserDetailsService.getCurrentUsername()))
                 .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(brand)))
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(car -> car.getBrand().equals(brand))
+                .map(carMapper::carToCarDTO)
                 .toList();
     }
 
-    public Car findMostExpensiveCarByBrand(String brand) {
+    public CarDTO findMostExpensiveCarByBrand(String brand) {
         return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(customUserDetailsService.getCurrentUsername()))
                 .orElseThrow(() -> new CarNotFoundException(utils.noCarsFoundMessage(null)))
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(car -> car.getBrand().equals(brand))
-                .max(Comparator.comparing(Car::getPrice))
+                .map(carMapper::carToCarDTO)
+                .max(Comparator.comparing(CarDTO::getPrice))
                 .orElseThrow(CarNotFoundException::new);
     }
 
-    public List<Car> findAllCarsByCustomerAndFuel(Fuel fuel) {
+    public List<CarDTO> findAllCarsByCustomerAndFuel(Fuel fuel) {
         return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(customUserDetailsService.getCurrentUsername()))
                 .orElseThrow(() -> new NoCarsFoundException(utils.noCarsFoundMessage(String.valueOf(fuel))))
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(car -> car.getFuel().equals(fuel))
+                .map(carMapper::carToCarDTO)
                 .toList();
     }
 }

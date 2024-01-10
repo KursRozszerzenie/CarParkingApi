@@ -1,19 +1,11 @@
 package com.example.carparkingapi.controller;
 
 import com.example.carparkingapi.command.CarCommand;
-import com.example.carparkingapi.config.map.struct.CarMapper;
-import com.example.carparkingapi.domain.Car;
-import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.dto.CarDTO;
-import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.model.Fuel;
-import com.example.carparkingapi.repository.CarRepository;
-import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.service.CarService;
 import com.example.carparkingapi.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,42 +20,25 @@ public class CustomerController {
 
     private final CarService carService;
 
-    private final CarRepository carRepository;
-
-    private final CustomerRepository customerRepository;
-
-    private final CarMapper carMapper;
-
     private final CustomUserDetailsService customUserDetailsService;
 
     @GetMapping("/cars")
-    public ResponseEntity<Page<CarDTO>> getCarsByCustomer(Pageable pageable) {
+    public ResponseEntity<List<CarDTO>> getCarsByCustomer() {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByCustomer(pageable)
-                .map(carMapper::carToCarDTO), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findAllCarsByCustomer(), HttpStatus.OK);
     }
 
-
-    @PostMapping("/save")
+    @PostMapping("cars/save")
     public ResponseEntity<Void> saveNewCar(@RequestBody @Valid CarCommand carCommand) {
         customUserDetailsService.verifyCustomerAccess();
-        carService.save(carMapper.carCommandToCar(carCommand));
+        carService.save(carCommand);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PostMapping("/save/batch")
+    @PostMapping("cars/save/batch")
     public ResponseEntity<List<Void>> saveAll(@RequestBody @Valid List<CarCommand> carCommands) {
-
         customUserDetailsService.verifyCustomerAccess();
-        Customer customer = customerRepository.findCustomerByUsername(customUserDetailsService.getCurrentUsername())
-                .orElseThrow(CustomerNotFoundException::new);
-
-        carRepository.saveAll(carCommands.stream().map(command -> {
-            Car car = carMapper.carCommandToCar(command);
-            car.setCustomer(customer);
-            return car;
-        }).toList());
-
+        carService.saveBatch(carCommands, customUserDetailsService.getCurrentCustomer());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -91,26 +66,24 @@ public class CustomerController {
     @GetMapping("/cars/most-expensive")
     public ResponseEntity<CarDTO> getMostExpensiveCar() {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carMapper.carToCarDTO(carService.findMostExpensiveCarForCustomer()), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findMostExpensiveCarForCustomer(), HttpStatus.OK);
     }
 
     @GetMapping("/cars/most-expensive/{brand}")
     public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carMapper.carToCarDTO(carService.findMostExpensiveCarByBrand(brand)), HttpStatus.OK);
+        return new ResponseEntity<>((carService.findMostExpensiveCarByBrand(brand)), HttpStatus.OK);
     }
 
     @GetMapping("/cars/all/brand/{brand}")
     public ResponseEntity<List<CarDTO>> getAllCarsByBrand(@PathVariable String brand) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByBrand(brand).stream()
-                .map(carMapper::carToCarDTO).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findAllCarsByBrand(brand), HttpStatus.OK);
     }
 
     @GetMapping("/cars/all/fuel/{fuel}")
     public ResponseEntity<List<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel).stream()
-                .map(carMapper::carToCarDTO).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel), HttpStatus.OK);
     }
 }

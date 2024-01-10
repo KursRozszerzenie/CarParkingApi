@@ -9,12 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Setter
 @EqualsAndHashCode
-@ToString
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,5 +1,6 @@
 package com.example.carparkingapi.util;
 
+import com.example.carparkingapi.exception.not.found.UserNotFoundException;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.service.CustomUserDetailsService;
@@ -17,7 +18,7 @@ public class Utils {
     public String noCarsFoundMessage(String value) {
         String str = "No cars found for customer " + customerRepository
                 .findCustomerByUsername(customUserDetailsService.getCurrentUsername())
-                .orElseThrow()//dodaj error
+                .orElseThrow(UserNotFoundException::new)
                 .getUsername();
         if (value == null) {
             return str;

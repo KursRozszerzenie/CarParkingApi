@@ -1,7 +1,12 @@
 package com.example.carparkingapi.service;
 
+import com.example.carparkingapi.command.ParkingCommand;
+import com.example.carparkingapi.config.map.struct.CarMapper;
+import com.example.carparkingapi.config.map.struct.ParkingMapper;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Parking;
+import com.example.carparkingapi.dto.CarDTO;
+import com.example.carparkingapi.dto.ParkingDTO;
 import com.example.carparkingapi.exception.not.found.CarNotFoundException;
 import com.example.carparkingapi.exception.not.found.ParkingNotFoundException;
 import com.example.carparkingapi.exception.parking.action.FullParkingException;
@@ -17,53 +22,66 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.example.carparkingapi.util.Constants.*;
+
 @Service
 @RequiredArgsConstructor
 public class ParkingService {
 
     private final ParkingRepository parkingRepository;
 
-    public Parking save(Parking parking) {
+    private final ParkingMapper parkingMapper;
+
+    private final CarMapper carMapper;
+
+    public void save(ParkingCommand parkingCommand) {
+        Parking parking = parkingMapper.parkingCommandToParking(parkingCommand);
         parking.setTakenPlaces(0);
         parking.setTakenElectricPlaces(0);
-        return parkingRepository.save(parking);
+        parkingRepository.save(parking);
     }
 
-    public String delete(Long id) {
+    public void delete(Long id) {
         Parking parking = findById(id);
         parkingRepository.delete(parking);
-        return "Parking with id " + id + " deleted";
+    }
+
+    public List<ParkingDTO> getAllParkings() {
+        return parkingRepository.findAll().stream()
+                .map(parkingMapper::parkingToParkingDTO)
+                .toList();
     }
 
     public Parking findById(Long id) {
         return parkingRepository.findById(id)
-                .orElseThrow(() -> new ParkingNotFoundException("Parking not found"));
+                .orElseThrow(() -> new ParkingNotFoundException(PARKING_NOT_FOUND_ERROR_MESSAGE));
     }
 
-    public List<Car> findAllCarsFromParking(Long id) {
+    public List<CarDTO> findAllCarsFromParking(Long id) {
         return findById(id).getCars().stream()
+                .map(carMapper::carToCarDTO)
                 .toList();
     }
 
-    public Car findMostExpensiveCarFromParking(Long id) {
+    public CarDTO findMostExpensiveCarFromParking(Long id) {
         return findById(id).getCars().stream()
                 .max(Comparator.comparing(Car::getPrice))
-                .orElseThrow(() -> new CarNotFoundException("No cars found"));
+                .map(carMapper::carToCarDTO)
+                .orElseThrow(() -> new CarNotFoundException(CAR_NOT_FOUND_ERROR_MESSAGE));
     }
 
-//    to do zmiany .equals
     protected void validateParkingSpace(Parking parking, Car car) {
         if (parking.getTakenPlaces() >= parking.getCapacity()) {
-            throw new FullParkingException("Parking is already full");
+            throw new FullParkingException(PARKING_FULL_ERROR_MESSAGE);
         }
         if (car.getLength() > parking.getParkingSpotLength() || car.getWidth() > parking.getParkingSpotWidth()) {
-            throw new ParkingSpaceToSmallException("Parking space is too small for this car");
+            throw new ParkingSpaceToSmallException(PARKING_SPACE_TO_SMALL_ERROR_MESSAGE);
         }
-        if (car.getFuel() == Fuel.ELECTRIC && parking.getTakenElectricPlaces() >= parking.getPlacesForElectricCars()) {
-            throw new NoMoreElectricPlacesException("This parking has no more electric places");
+        if ((Fuel.ELECTRIC.equals(car.getFuel()) && parking.getTakenElectricPlaces() >= parking.getPlacesForElectricCars())) {
+            throw new NoMoreElectricPlacesException(NO_MORE_ELECTRIC_PLACES_ERROR_MESSAGE);
         }
-        if (car.getFuel().equals(Fuel.LPG) && parking.getParkingType().equals(ParkingType.UNDERGROUND)) {
-            throw new LPGNotAllowedException("This parking does not allow LPG cars");
+        if (Fuel.LPG.equals(car.getFuel()) && ParkingType.UNDERGROUND.equals(parking.getParkingType())) {
+            throw new LPGNotAllowedException(PARKING_NOT_ALLOW_LPG_CAR_ERROR_MESSAGE);
         }
     }
 }

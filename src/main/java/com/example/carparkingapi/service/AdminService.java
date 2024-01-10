@@ -1,14 +1,15 @@
 package com.example.carparkingapi.service;
 
-import com.example.carparkingapi.action.Action;
-import com.example.carparkingapi.action.edit.action.EditAction;
 import com.example.carparkingapi.command.EditCommand;
-import com.example.carparkingapi.config.map.struct.ActionMapper;
-import com.example.carparkingapi.domain.Admin;
+import com.example.carparkingapi.config.map.struct.CarMapper;
+import com.example.carparkingapi.config.map.struct.CustomerMapper;
+import com.example.carparkingapi.config.map.struct.ParkingMapper;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.domain.Parking;
-import com.example.carparkingapi.dto.ActionDTO;
+import com.example.carparkingapi.dto.CarDTO;
+import com.example.carparkingapi.dto.CustomerDTO;
+import com.example.carparkingapi.dto.ParkingDTO;
 import com.example.carparkingapi.exception.not.found.CarNotFoundException;
 import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.exception.not.found.ParkingNotFoundException;
@@ -26,8 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.example.carparkingapi.util.Constants.*;
 
@@ -49,7 +48,11 @@ public class AdminService {
 
     private final ParkingRepository parkingRepository;
 
-    private final ActionMapper actionMapper;
+    private final CustomerMapper customerMapper;
+
+    private final CarMapper carMapper;
+
+    private final ParkingMapper parkingMapper;
 
     public void verifyAdminAccessAndSaveAction(ActionType actionType) {
         if (!adminRepository.existsAdminByUsername(customUserDetailsService.getCurrentUsername())) {
@@ -71,7 +74,13 @@ public class AdminService {
                 editService.getOldValue(entityId, entityType, fieldName), newValue);
     }
 
-    public Customer updateCustomer(Long customerId, EditCommand customerEdit) {
+    public List<CustomerDTO> getAllCustomers() {
+        return customerRepository.findAll().stream()
+                .map(customerMapper::customerToCustomerDTO)
+                .toList();
+    }
+
+    public CustomerDTO updateCustomer(Long customerId, EditCommand customerEdit) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(CustomerNotFoundException::new);
 
@@ -83,10 +92,10 @@ public class AdminService {
             default -> throw new InvalidFieldNameException(CUSTOMER_FIELD_ERROR_MESSAGE);
         }
 
-        return customerRepository.save(customer);
+        return customerMapper.customerToCustomerDTO(customerRepository.save(customer));
     }
 
-    public Car updateCar(Long carId, EditCommand editCommand) {
+    public CarDTO updateCar(Long carId, EditCommand editCommand) {
         Car car = carRepository.findById(carId)
                 .orElseThrow(CarNotFoundException::new);
 
@@ -101,10 +110,10 @@ public class AdminService {
             default -> throw new InvalidFieldNameException(CAR_FIELD_ERROR_MESSAGE);
         }
 
-        return carRepository.save(car);
+        return carMapper.carToCarDTO(carRepository.save(car));
     }
 
-    public Parking updateParking(Long parkingId, EditCommand editCommand) {
+    public ParkingDTO updateParking(Long parkingId, EditCommand editCommand) {
         Parking parking = parkingRepository.findById(parkingId)
                 .orElseThrow(ParkingNotFoundException::new);
 
@@ -120,47 +129,38 @@ public class AdminService {
             default -> throw new InvalidFieldNameException(PARKING_FIELD_ERROR_MESSAGE);
         }
 
-        return parkingRepository.save(parking);
+        return parkingMapper.parkingToParkingDTO(parkingRepository.save(parking));
     }
 
-    public Customer lockCustomerAccount(Long customerId) {
+    public void lockCustomerAccount(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(CustomerNotFoundException::new);
 
         customer.setAccountNonLocked(false);
-
-        return customerRepository.save(customer);
+        customerRepository.save(customer);
     }
 
-    public Customer unlockCustomerAccount(Long customerId) {
+    public void unlockCustomerAccount(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(CustomerNotFoundException::new);
 
         customer.setAccountNonLocked(true);
-
-        return customerRepository.save(customer);
+        customerRepository.save(customer);
     }
 
-    public Customer enableCustomerAccount(Long customerId) {
+    public void enableCustomerAccount(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(CustomerNotFoundException::new);
 
         customer.setAccountEnabled(true);
-
-        return customerRepository.save(customer);
+        customerRepository.save(customer);
     }
 
-    public Customer disableCustomerAccount(Long customerId) {
+    public void disableCustomerAccount(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(CustomerNotFoundException::new);
 
         customer.setAccountEnabled(false);
-
-        return customerRepository.save(customer);
-    }
-
-    public List<Action> getActionsForAdmin() {
-        Admin currentAdmin = (Admin) customUserDetailsService.loadUserByUsername(customUserDetailsService.getCurrentUsername());
-        return currentAdmin.getCreatedActions();
+        customerRepository.save(customer);
     }
 }
