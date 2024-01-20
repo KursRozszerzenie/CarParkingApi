@@ -2,6 +2,8 @@ package com.example.carparkingapi.controller;
 
 import com.example.carparkingapi.command.AdminCommand;
 import com.example.carparkingapi.command.CustomerCommand;
+import com.example.carparkingapi.config.map.struct.CustomerMapper;
+import com.example.carparkingapi.dto.CustomerDTO;
 import com.example.carparkingapi.model.AuthenticationRequest;
 import com.example.carparkingapi.model.AuthenticationResponse;
 import com.example.carparkingapi.service.AuthenticationService;
@@ -22,9 +24,12 @@ public class AuthenticationController {
 
     private final AuthenticationService authService;
 
+    private final CustomerMapper customerMapper;
+
     @PostMapping("/customer/register")
-    public ResponseEntity<AuthenticationResponse> registerCustomer(@RequestBody @Valid CustomerCommand request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerCustomer(request));
+    public ResponseEntity<CustomerDTO> registerCustomer(@RequestBody @Valid CustomerCommand request) {
+        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(
+                authService.registerCustomer(request)), HttpStatus.CREATED);
     }
 
     @PostMapping("/customer/authenticate")

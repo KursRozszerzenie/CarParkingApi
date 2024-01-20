@@ -5,6 +5,7 @@ import com.example.carparkingapi.command.CustomerCommand;
 import com.example.carparkingapi.config.security.jwt.JwtService;
 import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
+import com.example.carparkingapi.dto.CustomerDTO;
 import com.example.carparkingapi.exception.not.found.AdminNotFoundException;
 import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
 import com.example.carparkingapi.exception.security.InvalidCredentialsException;
@@ -38,8 +39,7 @@ public class AuthenticationService {
 
     private static final Logger logger = LogManager.getLogger(AuthenticationService.class);
 
-
-    public AuthenticationResponse registerCustomer(CustomerCommand request) {
+    public Customer registerCustomer(CustomerCommand request) {
         Customer customer = new Customer();
         customer.setFirstName(request.getFirstName());
         customer.setLastName(request.getLastName());
@@ -51,9 +51,8 @@ public class AuthenticationService {
         customer.setAccountNonLocked(true);
         customer.setCredentialsNonExpired(true);
 
-        customerRepository.save(customer);
 
-        return new AuthenticationResponse(jwtService.generateToken(customer));
+        return customerRepository.save(customer);
     }
 
     public AuthenticationResponse authenticateCustomer(AuthenticationRequest request) {
