@@ -9,13 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CarRepository extends JpaRepository<Car, Long> {
     Page<Car> findAllByParkingId(Long parkingId, Pageable pageable);
 
     Page<Car> findAllCarsByCustomerUsername(String username, Pageable pageable);
-
-    Page<Car> findAllCarsByCustomerUsername(String username);
 
     Page<Car> findAllByCustomerUsernameAndFuel(String username, Fuel fuel, Pageable pageable);
 
@@ -23,4 +22,5 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     @NotNull Page<Car> findAll(@NotNull Pageable pageable);
 
+    Optional<Car> findCarByCustomerUsernameAndBrandAndModel(String username, String brand, String model);
 }

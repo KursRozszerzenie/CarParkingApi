@@ -52,7 +52,7 @@ public class Car {
     private Parking parking;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 }

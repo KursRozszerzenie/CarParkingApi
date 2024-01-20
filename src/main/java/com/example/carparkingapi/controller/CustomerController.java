@@ -27,36 +27,36 @@ public class CustomerController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @GetMapping("/cars")
-    public ResponseEntity<Page<CarDTO>> getCarsByCustomer(
-        @PageableDefault(size = 15, sort = "brand", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<Page<CarDTO>> getAllCarsByCustomer(
+        @PageableDefault(size = 15, sort = "price", direction = Sort.Direction.ASC) Pageable pageable) {
         customUserDetailsService.verifyCustomerAccess();
         return new ResponseEntity<>(carService.findAllCarsByCustomer(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/cars/all/brand/{brand}")
-    public ResponseEntity<Page<CarDTO>> getAllCarsByBrand(@PathVariable String brand,
-        @PageableDefault(size = 15, sort = "brand", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<Page<CarDTO>> getAllCarsByCustomerAndBrand(@PathVariable String brand,
+        @PageableDefault(size = 15, sort = "price", direction = Sort.Direction.ASC) Pageable pageable) {
         customUserDetailsService.verifyCustomerAccess();
         return new ResponseEntity<>(carService.findAllCarsByCustomerAndBrand(brand, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/cars/all/fuel/{fuel}")
-    public ResponseEntity<Page<CarDTO>> getAllCarsByFuel(@PathVariable Fuel fuel,
-        @PageableDefault(size = 15, sort = "brand", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<Page<CarDTO>> getAllCarsByCustomerAndFuel(@PathVariable Fuel fuel,
+        @PageableDefault(size = 15, sort = "price", direction = Sort.Direction.ASC) Pageable pageable) {
         customUserDetailsService.verifyCustomerAccess();
         return new ResponseEntity<>(carService.findAllCarsByCustomerAndFuel(fuel, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/cars/most-expensive")
-    public ResponseEntity<CarDTO> getMostExpensiveCar() {
+    public ResponseEntity<CarDTO> getMostExpensiveCar(Pageable pageable) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>(carService.findMostExpensiveCarForCustomer(), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findMostExpensiveCarForCustomer(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/cars/most-expensive/{brand}")
-    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand) {
+    public ResponseEntity<CarDTO> getMostExpensiveCarByBrand(@PathVariable String brand, Pageable pageable) {
         customUserDetailsService.verifyCustomerAccess();
-        return new ResponseEntity<>((carService.findMostExpensiveCarByCustomerAndBrand(brand)), HttpStatus.OK);
+        return new ResponseEntity<>(carService.findMostExpensiveCarByCustomerAndBrand(brand, pageable), HttpStatus.OK);
     }
 
     @PostMapping("cars/save")

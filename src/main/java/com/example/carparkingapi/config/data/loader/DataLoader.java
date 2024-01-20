@@ -1,7 +1,10 @@
 package com.example.carparkingapi.config.data.loader;
 
+import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Customer;
+import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.model.Role;
+import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 
 @Component
 @RequiredArgsConstructor
@@ -19,6 +24,8 @@ public class DataLoader implements CommandLineRunner {
     private final CustomerRepository customerRepository;
 
     private final  PasswordEncoder passwordEncoder;
+
+    private final CarRepository carRepository;
 
     private final Faker faker = new Faker();
 

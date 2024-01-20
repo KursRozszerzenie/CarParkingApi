@@ -131,7 +131,7 @@ public class CarService {
 
     public Page<CarDTO> findAllCarsByCustomer(Pageable pageable) {
         return carRepository.findAllCarsByCustomerUsername(
-                        customUserDetailsService.getCurrentUsername(), pageable).map(carMapper::carToCarDTO);
+                customUserDetailsService.getCurrentUsername(), pageable).map(carMapper::carToCarDTO);
 
     }
 
@@ -149,25 +149,28 @@ public class CarService {
     }
 
 
-    public CarDTO findMostExpensiveCarForCustomer() {
-        return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(
-                        customUserDetailsService.getCurrentUsername()))
-                .orElseThrow(() -> new CarNotFoundException(utils.noCarsFoundMessage(null)))
+    public CarDTO findMostExpensiveCarForCustomer(Pageable pageable) {
+        Page<Car> carsPage = carRepository.findAllCarsByCustomerUsername(
+                customUserDetailsService.getCurrentUsername(), pageable);
+
+        return carsPage.getContent()
                 .stream()
-                .filter(Objects::nonNull)
+                .max(Comparator.comparing(Car::getPrice))
                 .map(carMapper::carToCarDTO)
-                .max(Comparator.comparing(CarDTO::getPrice))
                 .orElseThrow(() -> new CarNotFoundException("No cars found"));
     }
 
-    public CarDTO findMostExpensiveCarByCustomerAndBrand(String brand) {
-        return Optional.ofNullable(carRepository.findAllCarsByCustomerUsername(customUserDetailsService.getCurrentUsername()))
-                .orElseThrow(() -> new CarNotFoundException(utils.noCarsFoundMessage(null)))
+
+    public CarDTO findMostExpensiveCarByCustomerAndBrand(String brand, Pageable pageable) {
+        Page<Car> carsPage = carRepository.findAllByCustomerUsernameAndBrand(
+                customUserDetailsService.getCurrentUsername(), brand, pageable);
+
+        return carsPage.getContent()
                 .stream()
-                .filter(Objects::nonNull)
                 .filter(car -> car.getBrand().equals(brand))
+                .max(Comparator.comparing(Car::getPrice))
                 .map(carMapper::carToCarDTO)
-                .max(Comparator.comparing(CarDTO::getPrice))
-                .orElseThrow(CarNotFoundException::new);
+                .orElseThrow(() -> new CarNotFoundException("Car not found for brand: " + brand));
     }
+
 }
