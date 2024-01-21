@@ -11,5 +11,4 @@ public interface ActionRepository extends JpaRepository<Action, Long> {
     @NotNull Page<Action> findAll(@NotNull Pageable pageable);
 
     Page<Action> findByCreatedBy(Admin admin, Pageable pageable);
-
 }

@@ -147,6 +147,13 @@ public class AdminController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @DeleteMapping("/parking/{parkingId}/delete")
+    public ResponseEntity<Void> deleteParking(@PathVariable Long parkingId) {
+        adminService.verifyAdminAccessAndSaveAction(ActionType.DELETING_PARKING);
+        parkingService.delete(parkingId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping("/cars/{carId}/park/{parkingId}")
     public ResponseEntity<Void> parkCar(@PathVariable Long carId, @PathVariable Long parkingId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.PARKING_CAR);
@@ -161,19 +168,6 @@ public class AdminController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/cars/most-expensive")
-    public ResponseEntity<CarDTO> getMostExpensiveCar() {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_MOST_EXPENSIVE_CAR);
-        return new ResponseEntity<>(carService.findMostExpensiveCar(), HttpStatus.OK);
-    }
-
-    @DeleteMapping("/parking/delete/{parkingId}")
-    public ResponseEntity<Void> deleteParking(@PathVariable Long parkingId) {
-        adminService.verifyAdminAccessAndSaveAction(ActionType.DELETING_PARKING);
-        parkingService.delete(parkingId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     @GetMapping("/parking/{parkingId}/cars")
     public ResponseEntity<Page<CarDTO>> getAllCarsFromParking(@PathVariable Long parkingId,
       @PageableDefault(size = 15, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
@@ -185,6 +179,12 @@ public class AdminController {
     public ResponseEntity<Integer> countAllCarsFromParking(@PathVariable Long parkingId) {
         adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_CARS_COUNT_FROM_PARKING);
         return new ResponseEntity<>(parkingService.findById(parkingId).getCars().size(), HttpStatus.OK);
+    }
+
+    @GetMapping("/cars/most-expensive")
+    public ResponseEntity<CarDTO> getMostExpensiveCar() {
+        adminService.verifyAdminAccessAndSaveAction(ActionType.RETRIEVING_MOST_EXPENSIVE_CAR);
+        return new ResponseEntity<>(carService.findMostExpensiveCar(), HttpStatus.OK);
     }
 
     @GetMapping("/parking/{parkingId}/cars/most-expensive")

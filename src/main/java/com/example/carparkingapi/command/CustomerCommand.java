@@ -1,10 +1,12 @@
 package com.example.carparkingapi.command;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 
 @Data
+@AllArgsConstructor
 public class CustomerCommand {
 
     @NotBlank(message = "first name cannot be blank")

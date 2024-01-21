@@ -1,6 +1,7 @@
 package com.example.carparkingapi.command;
 
 import com.example.carparkingapi.model.ParkingType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -9,6 +10,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
 @Data
+@AllArgsConstructor
 public class ParkingCommand {
 
     @NotBlank(message = "Name cannot be blank")
