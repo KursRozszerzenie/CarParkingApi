@@ -2,7 +2,7 @@ package com.example.carparkingapi.controller;
 
 import com.example.carparkingapi.command.AdminCommand;
 import com.example.carparkingapi.command.CustomerCommand;
-import com.example.carparkingapi.config.map.struct.CustomerMapper;
+import com.example.carparkingapi.dto.AdminDTO;
 import com.example.carparkingapi.dto.CustomerDTO;
 import com.example.carparkingapi.model.AuthenticationRequest;
 import com.example.carparkingapi.model.AuthenticationResponse;
@@ -24,12 +24,10 @@ public class AuthenticationController {
 
     private final AuthenticationService authService;
 
-    private final CustomerMapper customerMapper;
 
     @PostMapping("/customer/register")
     public ResponseEntity<CustomerDTO> registerCustomer(@RequestBody @Valid CustomerCommand request) {
-        return new ResponseEntity<>(customerMapper.customerToCustomerDTO(
-                authService.registerCustomer(request)), HttpStatus.CREATED);
+        return new ResponseEntity<>(authService.registerCustomer(request), HttpStatus.CREATED);
     }
 
     @PostMapping("/customer/authenticate")
@@ -38,12 +36,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/admin/register")
-    public ResponseEntity<AuthenticationResponse> registerAdmin(@RequestBody @Valid AdminCommand request) {
+    public ResponseEntity<AdminDTO> registerAdmin(@RequestBody @Valid AdminCommand request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerAdmin(request));
     }
 
     @PostMapping("/admin/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticateAdmin(@RequestBody AdminCommand request) {
+    public ResponseEntity<AuthenticationResponse> authenticateAdmin(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authService.authenticateAdmin(request));
     }
 }

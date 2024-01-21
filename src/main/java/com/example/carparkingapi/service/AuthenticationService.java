@@ -2,9 +2,12 @@ package com.example.carparkingapi.service;
 
 import com.example.carparkingapi.command.AdminCommand;
 import com.example.carparkingapi.command.CustomerCommand;
+import com.example.carparkingapi.config.map.struct.AdminMapper;
+import com.example.carparkingapi.config.map.struct.CustomerMapper;
 import com.example.carparkingapi.config.security.jwt.JwtService;
 import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
+import com.example.carparkingapi.dto.AdminDTO;
 import com.example.carparkingapi.dto.CustomerDTO;
 import com.example.carparkingapi.exception.not.found.AdminNotFoundException;
 import com.example.carparkingapi.exception.not.found.CustomerNotFoundException;
@@ -37,9 +40,13 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
 
+    private final AdminMapper adminMapper;
+
+    private final CustomerMapper customerMapper;
+
     private static final Logger logger = LogManager.getLogger(AuthenticationService.class);
 
-    public Customer registerCustomer(CustomerCommand request) {
+    public CustomerDTO registerCustomer(CustomerCommand request) {
         Customer customer = new Customer();
         customer.setFirstName(request.getFirstName());
         customer.setLastName(request.getLastName());
@@ -52,7 +59,7 @@ public class AuthenticationService {
         customer.setCredentialsNonExpired(true);
 
 
-        return customerRepository.save(customer);
+        return customerMapper.customerToCustomerDTO(customerRepository.save(customer));
     }
 
     public AuthenticationResponse authenticateCustomer(AuthenticationRequest request) {
@@ -74,18 +81,16 @@ public class AuthenticationService {
         return new AuthenticationResponse(jwtService.generateToken(customer));
     }
 
-    public AuthenticationResponse registerAdmin(AdminCommand request) {
+    public AdminDTO registerAdmin(AdminCommand request) {
         Admin admin = new Admin();
         admin.setUsername(request.getUsername());
         admin.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        adminRepository.save(admin);
-
-        return new AuthenticationResponse(jwtService.generateToken(admin));
+        return adminMapper.adminToAdminDTO(adminRepository.save(admin));
     }
 
 
-    public AuthenticationResponse authenticateAdmin(AdminCommand request) {
+    public AuthenticationResponse authenticateAdmin(AuthenticationRequest request) {
         Admin admin = adminRepository.findAdminByUsername(request.getUsername())
                 .orElseThrow(() -> new AdminNotFoundException("Admin not found"));
 
