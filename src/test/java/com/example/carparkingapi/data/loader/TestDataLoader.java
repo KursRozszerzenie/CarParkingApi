@@ -1,4 +1,4 @@
-package com.example.carparkingapi.test.data.loader;
+package com.example.carparkingapi.data.loader;
 
 import com.example.carparkingapi.command.AdminCommand;
 import com.example.carparkingapi.command.CarCommand;
@@ -27,6 +27,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestDataLoader {
 
+    private static final String E_MAIL = "jan.kowalski@email.com";
+
     private final CustomerRepository customerRepository;
 
     private final CarRepository carRepository;
@@ -41,7 +43,7 @@ public class TestDataLoader {
         Customer customer = new Customer();
         customer.setFirstName("Jan");
         customer.setLastName("Kowalski");
-        customer.setUsername("jan.kowalski@email.com");
+        customer.setUsername(E_MAIL);
         customer.setPassword(passwordEncoder.encode("password"));
         customer.setRole(Role.USER);
         customer.setAccountEnabled(true);
@@ -66,7 +68,7 @@ public class TestDataLoader {
     }
 
     public CustomerCommand createCustomerCommand() {
-        return new CustomerCommand("Jan", "Kowalski", "jan.kowalski@email.com", "password");
+        return new CustomerCommand("Jan", "Kowalski", E_MAIL, "password");
     }
 
     public ParkingCommand createParkingCommand(){
@@ -90,7 +92,7 @@ public class TestDataLoader {
         Customer customer = new Customer();
         customer.setFirstName("Jan");
         customer.setLastName("Kowalski");
-        customer.setUsername("jan.kowalski@email.com");
+        customer.setUsername(E_MAIL);
         customer.setPassword("customerPassword");
         customer.setRole(Role.USER);
         customer.setAccountEnabled(true);
@@ -119,7 +121,7 @@ public class TestDataLoader {
         car1.setLength(50);
         car1.setWidth(1);
         car1.setFuel(Fuel.PETROL);
-        car1.setCustomer(customerRepository.findCustomerByUsername("jan.kowalski@email.com").orElseThrow());
+        car1.setCustomer(customerRepository.findCustomerByUsername(E_MAIL).orElseThrow());
         car1.setDateOfProduction(LocalDate.of(2023, 10, 10));
 
         Car car2 = new Car();
@@ -129,7 +131,7 @@ public class TestDataLoader {
         car2.setLength(1);
         car2.setWidth(1);
         car2.setFuel(Fuel.PETROL);
-        car2.setCustomer(customerRepository.findCustomerByUsername("jan.kowalski@email.com").orElseThrow());
+        car2.setCustomer(customerRepository.findCustomerByUsername(E_MAIL).orElseThrow());
         car2.setDateOfProduction(LocalDate.of(2023, 10, 10));
 
         Car car3 = new Car();
@@ -139,7 +141,7 @@ public class TestDataLoader {
         car3.setLength(1);
         car3.setWidth(1);
         car3.setFuel(Fuel.ELECTRIC);
-        car3.setCustomer(customerRepository.findCustomerByUsername("jan.kowalski@email.com").orElseThrow());
+        car3.setCustomer(customerRepository.findCustomerByUsername(E_MAIL).orElseThrow());
         car3.setDateOfProduction(LocalDate.of(2023, 10, 10));
 
         Car car4 = new Car();
@@ -149,7 +151,7 @@ public class TestDataLoader {
         car4.setLength(1);
         car4.setWidth(1);
         car4.setFuel(Fuel.PETROL);
-        car4.setCustomer(customerRepository.findCustomerByUsername("jan.kowalski@email.com").orElseThrow());
+        car4.setCustomer(customerRepository.findCustomerByUsername(E_MAIL).orElseThrow());
         car4.setDateOfProduction(LocalDate.of(2023, 10, 10));
 
         Parking parking1 = new Parking();
