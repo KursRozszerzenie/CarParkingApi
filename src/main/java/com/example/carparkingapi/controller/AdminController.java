@@ -42,6 +42,7 @@ public class AdminController {
     @PutMapping("/customers/update/{customerId}")
     public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long customerId,
                                                       @RequestBody EditCommand editCommand) {
+//        Dla potomnych, akcja zawsze bedzie edit w tym miejscu
         adminService.verifyAdminAccessAndSaveAction(ActionType.EDIT, customerId, CUSTOMER,
                 editCommand.getFieldName(), editCommand.getNewValue());
         return new ResponseEntity<>(adminService.updateCustomer(customerId, editCommand), HttpStatus.OK);
