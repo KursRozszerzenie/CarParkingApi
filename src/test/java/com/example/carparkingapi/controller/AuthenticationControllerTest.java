@@ -5,7 +5,7 @@ import com.example.carparkingapi.domain.Admin;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.model.AuthenticationRequest;
 import com.example.carparkingapi.model.AuthenticationResponse;
-import com.example.carparkingapi.test.data.loader.TestDataLoader;
+import com.example.carparkingapi.data.loader.TestDataLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

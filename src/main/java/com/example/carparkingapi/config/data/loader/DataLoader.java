@@ -29,13 +29,13 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        logger.info("loading test customers");
+        logger.info("loading test customers");
 //        loadCustomers();
-//        logger.info("test customers loaded");
+        logger.info("test customers loaded");
     }
 
     private void loadCustomers() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20; i++) {
             Customer customer = new Customer();
             customer.setFirstName(faker.name().firstName());
             customer.setLastName(faker.name().lastName());

@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     try {
                         auth
+                                .antMatchers(AUTH_WHITELIST).permitAll()
                                 .antMatchers(HttpMethod.GET, CUSTOMER_URL).hasAuthority(USER)
                                 .antMatchers(HttpMethod.POST, CUSTOMER_URL).hasAuthority(USER)
                                 .antMatchers(HttpMethod.PUT, CUSTOMER_URL).hasAuthority(USER)

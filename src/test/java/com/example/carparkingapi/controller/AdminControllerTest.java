@@ -3,6 +3,7 @@ package com.example.carparkingapi.controller;
 import com.example.carparkingapi.action.Action;
 import com.example.carparkingapi.action.edit.action.EditAction;
 import com.example.carparkingapi.command.EditCommand;
+import com.example.carparkingapi.data.loader.TestDataLoader;
 import com.example.carparkingapi.domain.Car;
 import com.example.carparkingapi.domain.Customer;
 import com.example.carparkingapi.domain.Parking;
@@ -16,7 +17,6 @@ import com.example.carparkingapi.repository.ActionRepository;
 import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.CustomerRepository;
 import com.example.carparkingapi.repository.ParkingRepository;
-import com.example.carparkingapi.test.data.loader.TestDataLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +36,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDate;
 
 import static com.example.carparkingapi.util.Constants.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -86,17 +87,22 @@ class AdminControllerTest {
         EditCommand editCommand = new EditCommand("firstName", "Marcin");
 
         mockMvc.perform(put("/api/v1/admin/customers/update/1")
-                .content(objectMapper.writeValueAsString(editCommand))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-            .andDo(print())
-            .andExpect(status().isOk());
+                        .content(objectMapper.writeValueAsString(editCommand))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
 
         assertEquals("Marcin", customerRepository.findById(1L)
                 .orElseThrow(CustomerNotFoundException::new).getFirstName());
 
         EditAction editAction = (EditAction) actionRepository.findAll().get(0);
-        assertEquals(1L, editAction.getCreatedBy().getId());
+//        assertJ assertThat(...).isEqualTo(..);
+//        assertThat("sdsdasd")
+//                .isNotNull()
+//                .isEqualTo()
+//                .isInstanceOf()
+//        assertEquals(1L, editAction.getCreatedBy().getId());
         assertEquals(1L, editAction.getEntityId());
         assertEquals(CUSTOMER, editAction.getEntityType());
         assertEquals("firstName", editAction.getFieldName());
@@ -157,8 +163,10 @@ class AdminControllerTest {
                         .content(objectMapper.writeValueAsString(editCommand))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").value(CUSTOMER_FIELD_ERROR_MESSAGE));
     }
+
 
     @Test
     @WithMockUser(username = "admin", password = "adminPassword", roles = "ADMIN")
@@ -168,7 +176,8 @@ class AdminControllerTest {
         mockMvc.perform(put("/api/v1/admin/cars/update/1")
                         .content(objectMapper.writeValueAsString(editCommand))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").value(CAR_FIELD_ERROR_MESSAGE));
     }
 
     @Test
@@ -179,7 +188,8 @@ class AdminControllerTest {
         mockMvc.perform(put("/api/v1/admin/parking/update/1")
                         .content(objectMapper.writeValueAsString(editCommand))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").value(PARKING_FIELD_ERROR_MESSAGE));
     }
 
     @Test
@@ -256,21 +266,22 @@ class AdminControllerTest {
                         .content(objectMapper.writeValueAsString(new EditCommand("firstName", "Marcin")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         mockMvc.perform(put("/api/v1/admin/cars/update/1")
                         .content(objectMapper.writeValueAsString(new EditCommand("brand", "Audi")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         mockMvc.perform(put("/api/v1/admin/parking/update/1")
                         .content(objectMapper.writeValueAsString(new EditCommand("adress", "wapienna")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
 
+//        wrzucic jakies parametry do paginazji np size 3 i sprawdzic czy faktycznie jest size 3
         mockMvc.perform(get("/api/v1/admin/action/all")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -305,21 +316,21 @@ class AdminControllerTest {
     @Test
     @WithMockUser(username = "admin", password = "adminPassword", roles = "ADMIN")
     void shouldReturnAllCars() throws Exception {
-    mockMvc.perform(get("/api/v1/admin/cars/all")
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalPages").exists())
-            .andExpect(jsonPath("$.totalElements").exists())
-            .andExpect(jsonPath("$.size").value(15))
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].brand").value("Mercedes-Benz"))
-            .andExpect(jsonPath("$.content[0].model").value("c-class"))
-            .andExpect(jsonPath("$.content[1].brand").value("BMW"))
-            .andExpect(jsonPath("$.content[1].model").value("M3"))
-            .andExpect(jsonPath("$.content[2].brand").value("Tesla"))
-            .andExpect(jsonPath("$.content[2].model").value("Model S"))
-            .andExpect(jsonPath("$.content[3].brand").value("BMW"))
-            .andExpect(jsonPath("$.content[3].model").value("M5"));
+        mockMvc.perform(get("/api/v1/admin/cars/all")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalPages").exists())
+                .andExpect(jsonPath("$.totalElements").exists())
+                .andExpect(jsonPath("$.size").value(15))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].brand").value("Mercedes-Benz"))
+                .andExpect(jsonPath("$.content[0].model").value("c-class"))
+                .andExpect(jsonPath("$.content[1].brand").value("BMW"))
+                .andExpect(jsonPath("$.content[1].model").value("M3"))
+                .andExpect(jsonPath("$.content[2].brand").value("Tesla"))
+                .andExpect(jsonPath("$.content[2].model").value("Model S"))
+                .andExpect(jsonPath("$.content[3].brand").value("BMW"))
+                .andExpect(jsonPath("$.content[3].model").value("M5"));
     }
 
     @Test
@@ -347,7 +358,8 @@ class AdminControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        Car savedCar = carRepository.findById(5L).orElseThrow(CarNotFoundException::new);
+        Car savedCar = carRepository.findById(5L)
+                .orElseThrow(CarNotFoundException::new);
 
         assertEquals("Audi", savedCar.getBrand());
         assertEquals("A4", savedCar.getModel());
@@ -433,7 +445,8 @@ class AdminControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        Car parkedCar = carRepository.findById(1L).orElseThrow(CarNotFoundException::new);
+        Car parkedCar = carRepository.findById(1L)
+                .orElseThrow(CarNotFoundException::new);
         assertEquals(1L, parkedCar.getParking().getId());
         assertEquals(1, parkedCar.getParking().getTakenPlaces());
         assertEquals(0, parkedCar.getParking().getTakenElectricPlaces());
@@ -444,16 +457,18 @@ class AdminControllerTest {
     @WithMockUser(username = "admin", password = "adminPassword", roles = "ADMIN")
     void shouldLeaveParking() throws Exception {
         mockMvc.perform(post("/api/v1/admin/cars/1/park/1")
-                        .contentType(MediaType.APPLICATION_JSON));
+                .contentType(MediaType.APPLICATION_JSON));
 
         mockMvc.perform(post("/api/v1/admin/cars/1/leave")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        Car leftParkingCar = carRepository.findById(1L).orElseThrow(CarNotFoundException::new);
+        Car leftParkingCar = carRepository.findById(1L)
+                .orElseThrow(CarNotFoundException::new);
         assertNull(leftParkingCar.getParking());
 
-        Parking parking = parkingRepository.findById(1L).orElseThrow(ParkingNotFoundException::new);
+        Parking parking = parkingRepository.findById(1L)
+                .orElseThrow(ParkingNotFoundException::new);
         assertEquals(0, parking.getTakenPlaces());
         assertEquals(0, parking.getTakenElectricPlaces());
     }

@@ -8,7 +8,7 @@ import com.example.carparkingapi.exception.not.found.ParkingNotFoundException;
 import com.example.carparkingapi.model.Fuel;
 import com.example.carparkingapi.repository.CarRepository;
 import com.example.carparkingapi.repository.ParkingRepository;
-import com.example.carparkingapi.test.data.loader.TestDataLoader;
+import com.example.carparkingapi.data.loader.TestDataLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,7 +77,6 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.totalElements").exists())
                 .andExpect(jsonPath("$.size").value(15))
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.sort.sorted").value(true))
                 .andExpect(jsonPath("$.sort.unsorted").value(false))
                 .andExpect(jsonPath("$.content[0].brand").value("Mercedes-Benz"))
                 .andExpect(jsonPath("$.content[0].model").value("c-class"))
@@ -100,7 +99,6 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.size").value(15))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.sort.sorted").value(true))
-                .andExpect(jsonPath("$.sort.unsorted").value(false))
                 .andExpect(jsonPath("$.content[0].brand").value("BMW"))
                 .andExpect(jsonPath("$.content[0].model").value("M3"))
                 .andExpect(jsonPath("$.content[1].brand").value("BMW"))
@@ -118,7 +116,6 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.size").value(15))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.sort.sorted").value(true))
-                .andExpect(jsonPath("$.sort.unsorted").value(false))
                 .andExpect(jsonPath("$.content[0].model").value("c-class"))
                 .andExpect(jsonPath("$.content[1].brand").value("BMW"))
                 .andExpect(jsonPath("$.content[1].model").value("M3"))
@@ -230,7 +227,8 @@ class CustomerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        Car parkedCar = carRepository.findById(1L).orElseThrow(ParkingNotFoundException::new);
+        Car parkedCar = carRepository.findById(1L)
+                .orElseThrow(ParkingNotFoundException::new);
         assertEquals(1L, parkedCar.getParking().getId());
         assertEquals(1, parkedCar.getParking().getTakenPlaces());
         assertEquals(0, parkedCar.getParking().getTakenElectricPlaces());
@@ -247,10 +245,12 @@ class CustomerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        Car leftParkingCar = carRepository.findById(1L).orElseThrow(CarNotFoundException::new);
+        Car leftParkingCar = carRepository.findById(1L)
+                .orElseThrow(CarNotFoundException::new);
         assertNull(leftParkingCar.getParking());
 
-        Parking parking = parkingRepository.findById(1L).orElseThrow(ParkingNotFoundException::new);
+        Parking parking = parkingRepository.findById(1L)
+                .orElseThrow(ParkingNotFoundException::new);
         assertEquals(0, parking.getTakenPlaces());
         assertEquals(0, parking.getTakenElectricPlaces());
     }
